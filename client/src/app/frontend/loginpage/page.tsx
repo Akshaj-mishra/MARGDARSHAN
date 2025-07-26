@@ -35,6 +35,12 @@ export default function LoginPage() {
             <input
               type={showPassword ? 'text' : 'password'}
               placeholder="Password"
+              name='password'
+              pattern='/d{8}'
+              minLength={8}
+              maxLength={8}
+              title='Password must be exactly 8 digits'
+
               className="w-full rounded-full bg-black border border-gray-600 px-10 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
