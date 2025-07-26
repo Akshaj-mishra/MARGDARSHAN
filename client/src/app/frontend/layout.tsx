@@ -1,9 +1,8 @@
-export default function AuthLayout({ children }: {
-  readonly children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      {children}
-    </div>
-  );
+// app/signup/layout.js
+export const metadata = {
+  title: 'Sign Up',
+};
+
+export default function Layout({ children }) {
+  return <>{children}</>;
 }
