@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { FaEnvelope, FaLock, FaGoogle, FaSignInAlt } from 'react-icons/fa';
 
@@ -11,7 +10,7 @@ export default function LoginPage() {
       <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover filter blur(4px)">
         <source src="/WhatsApp Video 2025-07-26 at 19.47.55_fc45921d.mp4" type="video/mp4" />Video not supported
       </video>
-      <div className="bg-black rounded-2xl p-8 w-full max-w-sm shadow-xl relative text-white">
+      <div className=" rounded-2xl p-8 w-full max-w-sm shadow-xl relative text-white">
         <button className="absolute top-3 right-4 text-white text-lg">✕</button>
 
         <h2 className="text-2xl font-bold text-center mb-1">Login</h2>
