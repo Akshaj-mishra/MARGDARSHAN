@@ -62,22 +62,22 @@ export default function LoginPage() {
             type="button"
             className="w-full bg-orange-400 hover:bg-orange-500 text-black font-semibold py-2 rounded-full flex items-center justify-center space-x-2"
           >
-            <FaGoogle />
+            <FaGoogle className="text-red-500"/>
             <span>Login with Google</span>
           </button>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-full flex items-center justify-center space-x-2"
+            className="w-full bg-orange-400 hover:bg-orange-500 text-white font-semibold py-2 rounded-full flex items-center justify-center space-x-2"
           >
             <FaSignInAlt />
             <span>Login</span>
           </button>
         </form>
 
-        <p className="text-center text-sm mt-6">
+        <p className="text-center text-sm mt-6  text-gray-600 dark:text-gray-400">
           Don’t have an account?{' '}
-          <a href="#" className="text-blue-400 hover:underline">
+          <a href="#" className="text-blue-600 hover:underline dark:text-blue-400">
             Sign up
           </a>
         </p>
