@@ -1,8 +1,8 @@
-// app/signup/layout.js
 export const metadata = {
-  title: 'Sign Up',
+  title: 'Sign Up | MARGADARSHAN',
+  description: 'Create your account to access MARGADARSHAN services',
 };
 
 export default function Layout({ children }) {
-  return <>{children}</>;
+  return children;
 }
