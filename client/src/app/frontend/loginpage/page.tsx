@@ -7,7 +7,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
-      <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover filter blur(4px)">
+      <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover filter blur[10px]">
         <source src="/WhatsApp Video 2025-07-26 at 19.47.55_fc45921d.mp4" type="video/mp4" />Video not supported
       </video>
       <div className=" rounded-2xl p-8 w-full max-w-sm shadow-xl relative text-white">
