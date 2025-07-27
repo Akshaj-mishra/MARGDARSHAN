@@ -168,7 +168,7 @@ export default function SignUpPage() {
 
                         <button
                             type="button"
-                            className="flex w-full items-center justify-center space-x-2 rounded-full border bg-blue-600 border-gray-300 py-2 px-4 text-gray-700 hover:bg-blue-700 dark:border-gray-600 dark:text-gray-300 hover:bg-amber-300"
+                            className="flex w-full items-center justify-center space-x-2 rounded-full border bg-blue-600 border-gray-300 py-2 px-4 text-gray-700 hover:bg-blue-700 dark:border-gray-600 dark:text-gray-300 "
                         >
                             <FaGoogle className="text-red-500" />
                             <span>Sign up with Google</span>
