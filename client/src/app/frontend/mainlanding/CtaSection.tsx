@@ -13,14 +13,14 @@ export default function CtaSection() {
         >
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Ready to Explore?</h2>
           <p className="text-blue-100 max-w-2xl mx-auto mb-8 text-lg">
-            Join millions of users navigating their world with Margadarshan. Sign up today and never get lost again.
+            Join millions of users navigating their world with Markdarshan. Sign up today and never get lost again.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <motion.a 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               href="/frontend/signuppage" 
-              className="px-8 py-3 bg-white text-yellow-300 rounded-lg font-medium shadow-lg"
+              className="px-8 py-3 bg-[#FFBE00] text-white rounded-lg font-medium shadow-lg"
             >
               Get Started for Free
             </motion.a>
@@ -28,7 +28,7 @@ export default function CtaSection() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               href="#features" 
-              className="px-8 py-3 border-2 border-white text-white rounded-lg font-medium"
+              className="px-8 py-3 border-2 border-[#FFBE00] text-white rounded-lg font-medium"
             >
               Learn More
             </motion.a>

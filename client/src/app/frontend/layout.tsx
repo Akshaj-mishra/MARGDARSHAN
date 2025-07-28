@@ -1,6 +1,6 @@
 export const metadata = {
-  title: 'Sign Up | MARGADARSHAN',
-  description: 'Create your account to access MARGADARSHAN services',
+  title: 'Sign Up | Markdarshan',
+  description: 'Create your account to access Markdarshan services',
 };
 
 export default function Layout({ children }) {

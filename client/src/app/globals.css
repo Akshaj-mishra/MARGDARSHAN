@@ -5,6 +5,21 @@
   --foreground: #171717;
 }
 
+@font-face {
+  font-family: 'Yashie_Demo';
+  src: url('../../public/Yashie_Demo.ttf') format('truetype');
+}
+
+.font-Yashie_Demo{
+  font-family: "Yashie_Demo";
+  font-weight: 400;
+}
+.font-Yashie_Demoheader{
+  font-family: "Yashie_Demo";
+  font-weight: 1000;
+}
+
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

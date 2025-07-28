@@ -103,7 +103,7 @@ export default function LandingPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-xl md:text-2xl text-white mb-8 max-w-2xl mx-auto"
           >
-            Margadarshan - Your Personalized paths, real-time weather, and cost tracking.
+            Markdarshan - Your Personalized paths, real-time weather, and cost tracking.
           </motion.p>
           <motion.div
             initial={{ opacity: 0 }}
@@ -205,7 +205,7 @@ export default function LandingPage() {
           >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">Powerful Features</h2>
             <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Margadarshan : All-in-One Travel Companion 
+              Markdarshan : All-in-One Travel Companion 
             </p>
           </motion.div>
 
@@ -334,7 +334,7 @@ export default function LandingPage() {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">About Margadarshan</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">About Markdarshan</h2>
             <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               As travel enthusiasts and technologists, we saw a gap in smart travel planning tools. Traditional apps don’t consider your vehicle’s capabilities, fuel needs, or safety. We built this platform to make travel smarter, more efficient, and safer — tailored just for you.
             </p>
@@ -392,7 +392,7 @@ export default function LandingPage() {
           >
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Ready to Explore?</h2>
             <p className="text-blue-100 max-w-2xl mx-auto mb-8 text-lg">
-              Join millions of users navigating their world with Margadarshan. Sign up today and never get lost again.
+              Join millions of users navigating their world with Markdarshan. Sign up today and never get lost again.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <motion.a 
@@ -472,7 +472,7 @@ export default function LandingPage() {
 
   
   <div className="mt-10 border-t border-gray-700 pt-6 text-sm text-center text-gray-400">
-    © 2025 Margadarshan. Built with 🚘 for a smarter journey.
+    © 2025 Markdarshan. Built with 🚘 for a smarter journey.
   </div>
 </footer>
     </div>

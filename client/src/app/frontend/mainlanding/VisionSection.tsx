@@ -22,7 +22,7 @@ export default function VisionSection() {
   ];
 
   return (
-    <section id="vision" className="py-20 bg-white dark:bg-gray-900">
+    <section id="vision" className="py-20 bg-white dark:bg-black">
       <div className="max-w-screen-xl mx-auto px-4">
         <motion.div 
           initial={{ opacity: 0 }}

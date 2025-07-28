@@ -83,7 +83,7 @@ export default function SignUpPage() {
             </video>
                 <div className="relative z-10 w-11/12 max-w-md rounded-xl  p-8 shadow-lg  ">
                 <button className="absolute top-3 right-4 text-white text-lg">✕</button>
-                    <h1 className="mb-6 text-center text-4xl font-bold text-gray-800 dark:text-white">MARGADARSHAN</h1>
+                    <h1 className="mb-6 text-center text-4xl font-bold text-gray-800 dark:text-white">Markdarshan</h1>
                     <p className="mb-6 text-center text-lg text-gray-600 dark:text-gray-300">Welcome to the beta! Enter your details to sign up</p>
 
                     <form onSubmit={handleSubmit} className="space-y-4">

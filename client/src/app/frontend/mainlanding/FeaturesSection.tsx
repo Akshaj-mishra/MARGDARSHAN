@@ -4,7 +4,7 @@ import { FaGlobeAmericas } from 'react-icons/fa';
 
 export default function FeaturesSection() {
   return (
-    <section id="features" className="py-20 bg-gray-50 dark:bg-gray-800">
+    <section id="features" className="py-20 bg-gray-50 dark:bg-black  ">
       <div className="max-w-screen-xl mx-auto px-4">
         <motion.div 
           initial={{ opacity: 0 }}
@@ -15,7 +15,7 @@ export default function FeaturesSection() {
         >
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">Powerful Features</h2>
           <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Margadarshan: All-in-One Travel Companion
+            Markdarshan: All-in-One Travel Companion
           </p>
         </motion.div>
 
@@ -27,7 +27,7 @@ export default function FeaturesSection() {
             transition={{ duration: 0.8 }}
           >
             <img 
-              src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" 
+              src="/Man looking through loupe at car route on mobile map app.jpg " 
               alt="Map Interface" 
               className="rounded-xl shadow-xl w-full h-auto"
             />

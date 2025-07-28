@@ -3,7 +3,7 @@ import { FaInstagram, FaLinkedinIn, FaTwitter } from 'react-icons/fa';
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0F172A] text-white py-10 px-4 sm:px-10">
+    <footer className="bg-black text-white py-10 px-4 sm:px-10">
       <div className="container px-4 text-center max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <h3 className="font-semibold text-lg mb-3">Get in Touch</h3>
@@ -56,7 +56,7 @@ export default function Footer() {
       </div>
 
       <div className="mt-10 border-t border-gray-700 pt-6 text-sm text-center text-gray-400">
-        © 2025 Margadarshan. Built with 🚘 for a smarter journey.
+        © 2025 Markdarshan. Built for 🚘 for a smarter journey.
       </div>
     </footer>
   );
