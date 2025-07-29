@@ -20,7 +20,7 @@ export default function Navbar({ darkMode, toggleDarkMode }: NavbarProps) {
               transition={{ duration: 0.5 }}
               className="text-gray-900 dark:text-amber-300 font-extrabold  font-Yashie_Demoheader text-4xl"
             >
-              Markdashan
+              Markdarshan
             </motion.h1>
             <ul className="hidden md:flex space-x-8 text-sm">
               <motion.li whileHover={{ scale: 1.05 }}>
