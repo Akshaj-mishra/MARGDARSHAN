@@ -4,7 +4,7 @@ import { FaGlobeAmericas } from 'react-icons/fa';
 
 export default function FeaturesSection() {
   return (
-    <section id="features" className="py-20 bg-gray-50 dark:bg-black  ">
+    <section id="features" className="py-20 bg-gray-50 dark:bg-neutral-900  ">
       <div className="max-w-screen-xl mx-auto px-4">
         <motion.div 
           initial={{ opacity: 0 }}
