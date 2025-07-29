@@ -13,7 +13,7 @@ export default function LoginPage() {
         <source src="/WhatsApp Video 2025-07-26 at 19.47.55_fc45921d.mp4" type="video/mp4" />Video not supported
       </video>
       <div className=" rounded-2xl p-8 w-full max-w-sm shadow-xl relative text-white">
-        <button onClick={()=>router.push('/frontend/landing')} className="absolute top-3 right-4 text-white text-lg">✕</button>
+        <button onClick={()=>router.push('/frontend/mainlanding')} className="absolute top-3 right-4 text-white text-lg">✕</button>
 
         <h2 className="text-2xl font-bold text-center mb-1">Login</h2>
         <p className="text-center text-sm mb-6 text-gray-400">
@@ -55,7 +55,7 @@ export default function LoginPage() {
           </div>
 
           <div className="text-right text-sm">
-            <a href="#" className="text-blue-400 hover:underline">
+            <a href="/frontend/Forgetpasspage" className="text-blue-400 hover:underline">
               Forgot Password?
             </a>
           </div>
