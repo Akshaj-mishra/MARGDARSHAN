@@ -76,7 +76,7 @@ export default function Navbar({ darkMode, toggleDarkMode }: NavbarProps) {
             <motion.a
               whileHover={{ scale: 1.05 }}
               href="/frontend/signuppage"
-              className="hidden md:block text-gray-900 dark:text-white hover:underline text-sm px-4 py-2 bg-transparent border border-yellow-300 text-blue-500 dark:text-blue-300 rounded-md"
+              className=" md:block text-gray-900 dark:text-white hover:underline text-sm px-2 py-2 bg-transparent border border-yellow-300 text-blue-500 dark:text-blue-300 rounded-md"
             >
               Signup
             </motion.a>

@@ -18,7 +18,10 @@
   font-family: "Yashie_Demo";
   font-weight: 1000;
 }
-
+html, body {
+  overflow-x: hidden;
+} 
+/* up is for mobile optimisation white screen issue fixed */
 
 @theme inline {
   --color-background: var(--background);
