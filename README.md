@@ -90,7 +90,7 @@ To get a local copy up and running, follow these simple steps.
 
 1.  **Clone the repository:**
     ```sh
-    git clone [https://github.com/your_username/Markdarshan.git](https://github.com/your_username/Markdarshan.git)
+    git clone https://github.com/Akshaj-mishra/MARGDARSHAN.git
     ```
 2.  **Navigate to the project directory:**
     ```sh
@@ -116,13 +116,13 @@ To get a local copy up and running, follow these simple steps.
 
 ## 👥 Our Team
 
-| Name              | Role                           | GitHub Profile                               |
-| ----------------- | ------------------------------ | -------------------------------------------- |
-| **Swastik Mishra** | Backend Developer              | [🔗 Link](https://github.com/swastik-mishra)   |
-| **Akshaj Mishra** | Backend Developer              | [🔗 Link](https://github.com/akshaj-mishra)    |
-| **Aryan Kumar** | Frontend Developer             | [🔗 Link](https://github.com/aryan-kumar)      |
-| **Ritika Kushwaha** | Frontend Developer             | [🔗 Link](https://github.com/ritika-kushwaha) |
-| **Subash Rahul** | Research & Documentation | [🔗 Link](https://github.com/subash-rahul)     |
+| Name              | Role                           
+| ----------------- | ------------------------------
+| **Swastik Mishra** | Backend Developer              
+| **Akshaj Mishra** | Backend Developer              
+| **Aryan Kumar** | Frontend Developer             
+| **Ritika Kushwaha** | Frontend Developer             
+| **Subash Rahul** | Research & Documentation 
 
 ---
 
