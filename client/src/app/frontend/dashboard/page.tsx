@@ -1,4 +1,5 @@
 'use client';
+import Navbar from './Navbar';
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import {
   FaTruckMoving,
@@ -16,8 +17,17 @@ import {
 } from 'react-icons/fa';
 
 export default function DashboardPage() {
-  // Dark mode state
   const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setDarkMode(true);
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);}
+
   // Mounted flag to avoid mismatches during hydration
   const [mounted, setMounted] = useState(false);
   // Ref to track if Tailwind CSS is injected
@@ -122,9 +132,10 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors duration-200 relative">
+    <div className="bg-gray-100 dark:bg-[#6A6767] min-h-screen transition-colors duration-200 relative">
+      <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
       {/* Navbar */}
-      <nav className="bg-white dark:bg-gray-800 shadow-md">
+      {/* <nav className="bg-white dark:bg-gray-800 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -158,13 +169,14 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-      </nav>
+      </nav> */}
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-[#6A6767] ">
         {/* Welcome Section */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome to Markdarshan</h1>
+        <div className="mb-8 text-center p-15">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome to <div className="ml-4 mr-4 inline-block text-yellow-300 font-Yashie_Demo">
+           Markdarshan</div></h1>
           <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">Your Intelligent Truck Routing and Fleet Management System</p>
         </div>
 
@@ -176,32 +188,32 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <a href="/routes-planner" className="route-card bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow block">
-            <div className="bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaRoute className="text-blue-600 dark:text-blue-400 text-2xl" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 ">
+          <a href="/routes-planner" className="route-card bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow block">
+            <div className="bg-blue-100 dark:bg-yellow-100/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaRoute className="text-yellow-300 dark:text-yellow-300 text-2xl" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Plan Routes</h3>
             <p className="text-gray-500 dark:text-gray-400">Create optimized routes for your fleet</p>
           </a>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow">
-            <div className="bg-green-100 dark:bg-green-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaGasPump className="text-green-600 dark:text-green-400 text-2xl" />
+          <div className="bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow">
+            <div className="bg-yellow-100 dark:bg-yellow-100/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaGasPump className="text-yellow-300 dark:text-yellow-300 text-2xl" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Fuel Calculator</h3>
             <p className="text-gray-500 dark:text-gray-400">Calculate fuel costs for your trips</p>
             <button
-              className="mt-4 bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-sm"
+              className="mt-4 bg-yellow-300 hover:bg-yellow-300 text-yellow-700 py-2 px-4 rounded-lg text-sm"
               onClick={() => setShowCalculator(true)}
             >
               Open Calculator
             </button>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow">
-            <div className="bg-purple-100 dark:bg-purple-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaTruck className="text-purple-600 dark:text-purple-400 text-2xl" />
+          <div className="bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow">
+            <div className="bg-yellow-100 dark:bg-yellow-100/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaTruck className="text-yellow-300 dark:text-yellow-300 text-2xl" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Fleet Overview</h3>
             <p className="text-gray-500 dark:text-gray-400">Monitor your entire fleet in real-time</p>
@@ -210,13 +222,13 @@ export default function DashboardPage() {
 
         {/* Stats Overview with Edit Options */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="stat-card bg-white dark:bg-gray-800 rounded-lg shadow p-6 relative">
+          <div className="stat-card bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 relative">
             <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
               <FaPlusCircle />
             </button>
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-                <FaTruck className="text-xl" />
+              <div className="p-3 rounded-lg bg-yellow-100 dark:bg-yellow-100/30 text-yellow-300 dark:text-yellow-300">
+                <FaTruck className="text-xl text-yellow-300 dark:text-yellow-300" />
               </div>
               <div className="ml-4">
                 <h3 className="text-sm text-gray-500 dark:text-gray-400">Total Vehicles</h3>
@@ -225,13 +237,13 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="stat-card bg-white dark:bg-gray-800 rounded-lg shadow p-6 relative">
+          <div className="stat-card bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 relative">
             <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
               <FaEdit />
             </button>
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
-                <FaCheckCircle className="text-xl" />
+              <div className="p-3 rounded-lg bg-yellow-100 dark:bg-yellow-100/30 text-yellow-300 dark:text-yellow-300">
+                <FaCheckCircle className="text-xl text-yellow-300 dark:text-yellow-300" />
               </div>
               <div className="ml-4">
                 <h3 className="text-sm text-gray-500 dark:text-gray-400">Active Vehicles</h3>
@@ -240,13 +252,13 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="stat-card bg-white dark:bg-gray-800 rounded-lg shadow p-6 relative">
+          <div className="stat-card bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 relative">
             <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
               <FaEdit />
             </button>
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
-                <FaRoute className="text-xl" />
+              <div className="p-3 rounded-lg bg-yellow-100 dark:bg-yellow-100/30 text-yellow-300 dark:text-yellow-300">
+                <FaRoute className="text-xl text-yellow-300 dark:text-yellow-300" />
               </div>
               <div className="ml-4">
                 <h3 className="text-sm text-gray-500 dark:text-gray-400">Active Routes</h3>
@@ -255,13 +267,13 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="stat-card bg-white dark:bg-gray-800 rounded-lg shadow p-6 relative">
+          <div className="stat-card bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 relative">
             <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
               <FaEdit />
             </button>
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
-                <FaExclamationTriangle className="text-xl" />
+              <div className="p-3 rounded-lg bg-yellow-100 dark:bg-yellow-100/30 text-yellow-300 dark:text-yellow-300">
+                <FaExclamationTriangle className="text-xl text-yellow-300 dark:text-yellow-300" />
               </div>
               <div className="ml-4">
                 <h3 className="text-sm text-gray-500 dark:text-gray-400">Issues</h3>
@@ -272,7 +284,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Metrics Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-8">
+        <div className="bg-white dark:bg-[#2e2d2d] rounded-lg shadow mb-8">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="font-semibold text-gray-900 dark:text-white">Performance Metrics</h3>
           </div>
@@ -309,8 +321,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="md:col-span-2 flex items-center justify-center">
-              <div className="text-center p-6 bg-gray-50 dark:bg-gray-700 rounded-lg w-full">
+            <div className="md:col-span-2 flex items-center justify-center ">
+              <div className="text-center p-6 bg-gray-50 dark:bg-[#181818] rounded-lg w-full">
                 <h4 className="font-medium text-gray-900 dark:text-white mb-4">Routes Overview</h4>
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-500 dark:text-gray-400">Completed Today:</span>
@@ -328,7 +340,7 @@ export default function DashboardPage() {
                   <span className="text-gray-500 dark:text-gray-400">Delayed:</span>
                   <span className="font-medium text-red-600 dark:text-red-400">2 routes</span>
                 </div>
-                <a href="/routes" className="mt-6 inline-block bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-sm">
+                <a href="/routes" className="mt-6 inline-block bg-yellow-300 hover:bg-yellow-300 text-yellow-700 py-2 px-4 rounded-lg text-sm">
                   View All Routes
                 </a>
               </div>
@@ -337,15 +349,15 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Activities */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-8">
+        <div className="bg-white dark:bg-[#2e2d2d] rounded-lg shadow mb-8">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
             <h3 className="font-semibold text-gray-900 dark:text-white">Recent Activities</h3>
             <a href="/activities" className="text-sm text-orange-600 hover:text-orange-500 font-medium">View All</a>
           </div>
           <div className="p-4">
             <div className="flex items-center py-3 border-b border-gray-100 dark:border-gray-700">
-              <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-full">
-                <FaCheckCircle className="text-green-600 dark:text-green-400" />
+              <div className="bg-yellow-300 dark:bg-yellow-100/30 p-2 rounded-full">
+                <FaCheckCircle className="text-yellow-700 dark:text-yellow-300" />
               </div>
               <div className="ml-4">
                 <p className="font-medium text-gray-900 dark:text-white">Delivery completed</p>
@@ -355,8 +367,8 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center py-3 border-b border-gray-100 dark:border-gray-700">
-              <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full">
-                <FaRoute className="text-blue-600 dark:text-blue-400" />
+              <div className="bg-yellow-300 dark:bg-yellow-100/30 p-2 rounded-full">
+                <FaRoute className="text-yellow-700 dark:text-yellow-300" />
               </div>
               <div className="ml-4">
                 <p className="font-medium text-gray-900 dark:text-white">New route assigned</p>
@@ -366,8 +378,8 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center py-3 border-b border-gray-100 dark:border-gray-700">
-              <div className="bg-yellow-100 dark:bg-yellow-900/30 p-2 rounded-full">
-                <FaClock className="text-yellow-600 dark:text-yellow-400" />
+              <div className="bg-yellow-100 dark:bg-yellow-100/30 p-2 rounded-full">
+                <FaClock className="text-yellow-700 dark:text-yellow-300" />
               </div>
               <div className="ml-4">
                 <p className="font-medium text-gray-900 dark:text-white">Delay reported</p>
@@ -377,8 +389,8 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center py-3 border-b border-gray-100 dark:border-gray-700">
-              <div className="bg-purple-100 dark:bg-purple-900/30 p-2 rounded-full">
-                <FaGasPump className="text-purple-600 dark:text-purple-400" />
+              <div className="bg-yellow-100 dark:bg-yellow-100/30 p-2 rounded-full">
+                <FaGasPump className="text-yellow-700 dark:text-yellow-300" />
               </div>
               <div className="ml-4">
                 <p className="font-medium text-gray-900 dark:text-white">Fuel refill completed</p>
@@ -388,8 +400,8 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center py-3">
-              <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded-full">
-                <FaExclamationTriangle className="text-red-600 dark:text-red-400" />
+              <div className="bg-yellow-100 dark:bg-yellow-100/30 p-2 rounded-full">
+                <FaExclamationTriangle className="text-yellow-700 dark:text-yellow-300" />
               </div>
               <div className="ml-4">
                 <p className="font-medium text-gray-900 dark:text-white">Vehicle issue reported</p>
