@@ -56,10 +56,10 @@ export default function LoginPage() {
               type={showPassword ? 'text' : 'password'}
               placeholder="Password"
               name="password"
-              pattern="\d{8}"
-              minLength={8}
+              pattern="[a-zA-Z0-9]{7,15}"
+              minLength={7}
               maxLength={15}
-              title="Password must be exactly 8 digits"
+              title="Password must be between 8 to 15 alphanumeric characters."
               className="w-full rounded-full bg-black border border-gray-600 px-10 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
               value={password}

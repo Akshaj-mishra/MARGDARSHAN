@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import {
   FaTruckMoving,
   FaMoon,
@@ -18,37 +18,71 @@ import {
 export default function DashboardPage() {
   // Dark mode state
   const [darkMode, setDarkMode] = useState(false);
+  // Mounted flag to avoid mismatches during hydration
+  const [mounted, setMounted] = useState(false);
+  // Ref to track if Tailwind CSS is injected
+  const tailwindInjectedRef = useRef(false);
 
-  // Sync theme on mount (client-only)
-  useEffect(() => {
+  // Inline Tailwind CSS - Injected inside the component to avoid hook errors
+  const inlineTailwindCSS = `
+    @tailwind base;
+    @tailwind components;
+    @tailwind utilities;
+
+    @layer base {
+      html {
+        @apply bg-gray-100 dark:bg-gray-900;
+      }
+    }
+  `;
+
+  // Inject Tailwind CSS inline (moved inside component)
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined' || tailwindInjectedRef.current) return;
+
+    // Remove existing style tag if any
+    const existing = document.getElementById('tailwind-inline');
+    if (existing) existing.remove();
+
+    // Create new style tag
+    const style = document.createElement('style');
+    style.id = 'tailwind-inline';
+    style.textContent = inlineTailwindCSS;
+    document.head.appendChild(style);
+
+    tailwindInjectedRef.current = true;
+  }, []);
+
+  // Apply initial theme synchronously before paint to avoid flash
+  useLayoutEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia?.('(prefers-color-scheme: dark)')?.matches;
+    try {
+      const savedTheme = localStorage.getItem('theme'); // 'dark' | 'light' | null
+      const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initialDark = savedTheme === 'dark' || (!savedTheme && systemPrefersDark);
 
-    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-      setDarkMode(true);
-      document.documentElement.classList.add('dark');
-    } else {
-      setDarkMode(false);
-      document.documentElement.classList.remove('dark');
+      setDarkMode(initialDark);
+      document.documentElement.classList.toggle('dark', initialDark);
+    } catch (e) {
+      // Ignore storage errors
+    } finally {
+      setMounted(true);
     }
   }, []);
 
+  // Keep localStorage in sync if darkMode changes after mount
+  useEffect(() => {
+    if (!mounted) return;
+    try {
+      localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+    } catch (e) {}
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode, mounted]);
+
   // Toggle theme handler
   const handleThemeToggle = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-
-    if (typeof window !== 'undefined') {
-      if (newDarkMode) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-      }
-    }
+    setDarkMode(prev => !prev);
   };
 
   // Calculator popup state
@@ -106,27 +140,25 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="flex items-center">
-              {/* removed previous navbar toggle - floating button used */}
               <div className="ml-4 flex items-center md:ml-6">
-                <a href="/frontend/loginpage" className="bg-white dark:bg-gray-700 text-gray-700 dark:text-white px-4 py-2 rounded-md text-sm font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">Login</a>
+                <button
+                  onClick={handleThemeToggle}
+                  title={darkMode ? 'Switch to light' : 'Switch to dark'}
+                  aria-label="Toggle theme"
+                  aria-pressed={darkMode}
+                  className={`p-2 rounded-full focus:outline-none transition-colors duration-200 ${
+                    darkMode ? 'bg-gray-800 text-yellow-300 hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {darkMode ? <FaSun className="text-lg" /> : <FaMoon className="text-lg" />}
+                </button>
+                <a href="/frontend/loginpage" className="ml-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-white px-4 py-2 rounded-md text-sm font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">Login</a>
                 <a href="/frontend/signuppage" className="ml-2 bg-orange-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-600">Sign Up</a>
               </div>
             </div>
           </div>
         </div>
       </nav>
-
-      {/* floating top-right theme toggle (fixed) */}
-      <button
-        onClick={handleThemeToggle}
-        title={darkMode ? 'Switch to light' : 'Switch to dark'}
-        aria-label="Toggle theme"
-        className={`fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg focus:outline-none transition-colors duration-200 ${
-          darkMode ? 'bg-gray-800 text-yellow-300 hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-gray-100'
-        }`}
-      >
-        {darkMode ? <FaSun className="text-lg" /> : <FaMoon className="text-lg" />}
-      </button>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
