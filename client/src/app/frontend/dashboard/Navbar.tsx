@@ -45,6 +45,7 @@ export default function Navbar() {
             >
               Signup
             </motion.a>
+            
           </div>
         </div>
       </div>

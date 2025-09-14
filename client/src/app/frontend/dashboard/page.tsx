@@ -70,7 +70,7 @@ export default function DashboardPage() {
     try {
       const savedTheme = localStorage.getItem('theme'); // 'dark' | 'light' | null
       const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const initialDark = savedTheme === 'dark' || (!savedTheme && systemPrefersDark);
+      const initialDark = savedTheme === 'System' || (!savedTheme && systemPrefersDark);
 
       setDarkMode(initialDark);
       document.documentElement.classList.toggle('dark', initialDark);
@@ -180,12 +180,7 @@ export default function DashboardPage() {
           <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">Your Intelligent Truck Routing and Fleet Management System</p>
         </div>
 
-        {/* Emergency SOS Button */}
-        <div className="mb-8 text-center">
-          <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-8 rounded-full text-lg flex items-center justify-center mx-auto animate-pulse">
-            <FaExclamationTriangle className="mr-2" /> EMERGENCY SOS
-          </button>
-        </div>
+        
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 ">
@@ -304,7 +299,7 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-500 dark:text-gray-400">Fuel Efficiency</p>
                 <div className="flex items-center">
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div className="bg-orange-500 h-2 rounded-full" style={{ width: '72%' }}></div>
+                    <div className="bg-yellow-300 h-2 rounded-full" style={{ width: '72%' }}></div>
                   </div>
                   <span className="ml-2 text-sm font-medium text-gray-900 dark:text-white">7.2 mpg</span>
                 </div>
@@ -417,7 +412,7 @@ export default function DashboardPage() {
       {showCalculator && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={e => { if (e.target === e.currentTarget) setShowCalculator(false); }}>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md">
-            <div className="bg-orange-500 text-white p-4 rounded-t-lg flex justify-between items-center">
+            <div className="bg-yellow-300 text-white p-4 rounded-t-lg flex justify-between items-center">
               <h3 className="font-semibold">Fuel & Cost Calculator</h3>
               <button className="text-white text-2xl" onClick={() => setShowCalculator(false)}>&times;</button>
             </div>

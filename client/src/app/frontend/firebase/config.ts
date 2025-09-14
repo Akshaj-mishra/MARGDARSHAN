@@ -29,6 +29,7 @@ export const signInWithGoogle = () => {
   return signInWithPopup(auth, googleProvider);
 };
 
+
 export const logout = () => {
   return signOut(auth);
 };
