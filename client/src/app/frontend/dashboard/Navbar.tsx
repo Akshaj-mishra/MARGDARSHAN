@@ -16,8 +16,8 @@ export default function Navbar() {
             >
               Markdarshan
             </motion.h1>
-            <ul className="hidden md:flex space-x-8 text-sm">
-              {["home", "vision", "features", "about"].map((link) => (
+            <ul className="hidden md:flex mx-100 space-x-8 text-sm  text-red-800 dark:text-color-red-800 font-semibold">
+              {["Emergency SOS"].map((link) => (
                 <motion.li key={link} whileHover={{ scale: 1.05 }}>
                   <a
                     href={`#${link}`}

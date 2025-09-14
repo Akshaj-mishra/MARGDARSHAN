@@ -213,7 +213,7 @@ export default function SignUpPage() {
           <button
             type="button"
             onClick={handleGoogleSignUp}
-            className="w-full bg-orange-400 hover:bg-orange-500 text-black font-semibold py-2 rounded-full flex items-center justify-center space-x-2 transition duration-200"
+            className="w-full bg-orange-400  hover:bg-orange-500 text-black font-semibold py-2 rounded-full flex items-center justify-center space-x-2 transition duration-200"
           >
             <FaGoogle className="text-red-500" />
             <span>{loading ? 'Please wait...' : 'Sign up with Google'}</span>

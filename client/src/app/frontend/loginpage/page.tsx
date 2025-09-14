@@ -68,7 +68,7 @@ export default function LoginPage() {
       <div className="rounded-2xl p-8 w-full max-w-sm shadow-xl relative text-white bg-black/70 z-10">
         <button
           onClick={() => router.push('/frontend/mainlanding')}
-          className="absolute top-3 right-4 text-white text-lg"
+          className="absolute top-3 right-4 text-white text-lg cursor-pointer "
           aria-label="Close login form"
         >
           ✕
@@ -138,7 +138,7 @@ export default function LoginPage() {
           {/* Email login button */}
           <button
             type="submit"
-            className="w-full bg-orange-400 hover:bg-orange-500 text-white font-semibold py-2 rounded-full flex items-center justify-center space-x-2"
+            className="w-full cursor-pointer bg-orange-400 hover:bg-orange-500 text-white font-semibold py-2 rounded-full flex items-center justify-center space-x-2"
           >
             <FaSignInAlt />
             <span>Login</span>

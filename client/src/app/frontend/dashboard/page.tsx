@@ -177,7 +177,7 @@ export default function DashboardPage() {
         <div className="mb-8 text-center p-15">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome to <div className="ml-4 mr-4 inline-block text-yellow-300 font-Yashie_Demo">
            Markdarshan</div></h1>
-          <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">Your Intelligent Truck Routing and Fleet Management System</p>
+          <p className="mt-2 text-lg text-gray-900 dark:text-gray-400">Your Intelligent Truck Routing and Fleet Management System</p>
         </div>
 
         
@@ -199,7 +199,7 @@ export default function DashboardPage() {
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Fuel Calculator</h3>
             <p className="text-gray-500 dark:text-gray-400">Calculate fuel costs for your trips</p>
             <button
-              className="mt-4 bg-yellow-300 hover:bg-yellow-300 text-yellow-700 py-2 px-4 rounded-lg text-sm"
+              className="mt-4 bg-yellow-300 cursor-pointer hover:bg-yellow-300 text-yellow-700 py-2 px-4 rounded-lg text-sm"
               onClick={() => setShowCalculator(true)}
             >
               Open Calculator
@@ -410,11 +410,11 @@ export default function DashboardPage() {
 
       {/* Calculator Popup */}
       {showCalculator && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={e => { if (e.target === e.currentTarget) setShowCalculator(false); }}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center  z-50 p-4" onClick={e => { if (e.target === e.currentTarget) setShowCalculator(false); }}>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md">
-            <div className="bg-yellow-300 text-white p-4 rounded-t-lg flex justify-between items-center">
+            <div className="bg-grey-800 text-black p-4 rounded-t-lg  flex justify-between items-center">
               <h3 className="font-semibold">Fuel & Cost Calculator</h3>
-              <button className="text-white text-2xl" onClick={() => setShowCalculator(false)}>&times;</button>
+              <button className="text-black cursor-pointer text-2xl" onClick={() => setShowCalculator(false)}>&times;</button>
             </div>
 
             <div className="p-4">
@@ -430,7 +430,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fuel Efficiency (km/L)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mileage (km/L)</label>
                 <input
                   type="number"
                   value={efficiency}
@@ -463,7 +463,7 @@ export default function DashboardPage() {
               </div>
 
               <button
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg mb-4"
+                className="w-full bg-yellow-300 hover:bg-yellow-500 cursor-pointer text-white py-2 rounded-lg mb-4"
                 onClick={handleCalculate}
               >
                 Calculate
@@ -487,17 +487,12 @@ export default function DashboardPage() {
 
               <div className="mt-4 flex justify-between">
                 <button
-                  className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-white py-2 px-4 rounded-lg"
+                  className="bg-gray-300 cursor-pointer dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-white py-2 px-4 rounded-lg"
                   onClick={handleClear}
                 >
                   Clear
                 </button>
-                <button
-                  className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center"
-                  onClick={() => setShowCalculator(false)}
-                >
-                  <FaArrowLeft className="mr-2" /> Back to Dashboard
-                </button>
+                
               </div>
             </div>
           </div>
