@@ -1,14 +1,8 @@
 "use client";
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { FaInstagram, FaLinkedinIn, FaTwitter } from "react-icons/fa";
+import ToggleMode from "../../component/ToggleMode";
 
-interface NavbarProps {
-  darkMode: boolean;
-  toggleDarkMode: () => void;
-}
-
-export default function Navbar({ darkMode, toggleDarkMode }: NavbarProps) {
+export default function Navbar() {
   return (
     <nav className="bg-white/80 dark:bg-black backdrop-blur-md fixed w-full z-50">
       <div className="max-w-screen-xl px-4 py-4 mx-auto">
@@ -18,65 +12,36 @@ export default function Navbar({ darkMode, toggleDarkMode }: NavbarProps) {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              className="text-gray-900 dark:text-amber-300 font-extrabold  font-Yashie_Demoheader text-4xl"
+              className="text-gray-900 dark:text-amber-300 font-extrabold font-Yashie_Demoheader text-4xl"
             >
               Markdarshan
             </motion.h1>
             <ul className="hidden md:flex space-x-8 text-sm">
-              <motion.li whileHover={{ scale: 1.05 }}>
-                <a
-                  href="#home"
-                  className="text-gray-900 dark:text-white hover:underline"
-                >
-                  Home
-                </a>
-              </motion.li>
-              <motion.li whileHover={{ scale: 1.05 }}>
-                <a
-                  href="#vision"
-                  className="text-gray-900 dark:text-white hover:underline"
-                >
-                  Vision
-                </a>
-              </motion.li>
-              <motion.li whileHover={{ scale: 1.05 }}>
-                <a
-                  href="#features"
-                  className="text-gray-900 dark:text-white hover:underline"
-                >
-                  Features
-                </a>
-              </motion.li>
-              <motion.li whileHover={{ scale: 1.05 }}>
-                <a
-                  href="#about"
-                  className="text-gray-900 dark:text-white hover:underline"
-                >
-                  About
-                </a>
-              </motion.li>
+              {["home", "vision", "features", "about"].map((link) => (
+                <motion.li key={link} whileHover={{ scale: 1.05 }}>
+                  <a
+                    href={`#${link}`}
+                    className="text-gray-900 dark:text-white hover:underline"
+                  >
+                    {link.charAt(0).toUpperCase() + link.slice(1)}
+                  </a>
+                </motion.li>
+              ))}
             </ul>
           </div>
           <div className="flex items-center space-x-4">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={toggleDarkMode}
-              className="p-2 rounded-full bg-gray-200 dark:bg-gray-700"
-            >
-              {darkMode ? "☀️" : "🌙"}
-            </motion.button>
+            <ToggleMode />
             <motion.a
               whileHover={{ scale: 1.05 }}
               href="/frontend/loginpage"
-              className="text-gray-900 dark:text-white hover:underline text-sm px-4 py-2 bg-[#FFBE00] text-white rounded-md"
+              className="px-4 py-2 text-sm rounded-md bg-yellow-400 text-black font-semibold hover:bg-yellow-500"
             >
               Login
             </motion.a>
             <motion.a
               whileHover={{ scale: 1.05 }}
               href="/frontend/signuppage"
-              className=" md:block text-gray-900 dark:text-white hover:underline text-sm px-2 py-2 bg-transparent border border-yellow-300 text-blue-500 dark:text-blue-300 rounded-md"
+              className="px-4 py-2 text-sm rounded-md border border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black"
             >
               Signup
             </motion.a>
