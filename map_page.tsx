@@ -25,6 +25,9 @@ function RouteOptimizerComponent() {
   const [destination, setDestination] = useState<any>(null);
   const originInputRef = useRef<HTMLInputElement>(null);
   const destinationInputRef = useRef<HTMLInputElement>(null);
+  const stopInputRef = useRef<HTMLInputElement>(null);
+  const [showStopModal, setShowStopModal] = useState(false);
+  const [stopAddress, setStopAddress] = useState("");
 
   const mapStyles = [
     {
@@ -390,6 +393,36 @@ function RouteOptimizerComponent() {
     setSearchQuery("");
   };
 
+  const recenterMap = () => {
+    if (map) {
+      map.setCenter({ lat: 28.6139, lng: 77.209 });
+      map.setZoom(13);
+    }
+  };
+
+  const openStopModal = () => setShowStopModal(true);
+  const closeStopModal = () => {
+    setShowStopModal(false);
+    setStopAddress("");
+  };
+  const handleAddStop = () => {
+    if (!stopAddress || !map) return;
+    const gmaps = (window as any).google.maps;
+    const geocoder = new gmaps.Geocoder();
+    geocoder.geocode({ address: stopAddress }, (results: any, status: any) => {
+      if (status === "OK" && results[0].geometry) {
+        addWaypoint({
+          geometry: { location: results[0].geometry.location },
+          name: stopAddress,
+          formatted_address: results[0].formatted_address,
+        });
+        closeStopModal();
+      } else {
+        alert("Could not find location for stop: " + stopAddress);
+      }
+    });
+  };
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const interval = setInterval(() => {
@@ -405,147 +438,175 @@ function RouteOptimizerComponent() {
     }
   }, []);
 
+  const stopAutocompleteRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (
+      showStopModal &&
+      stopAutocompleteRef.current &&
+      typeof window !== "undefined"
+    ) {
+      const gmaps = (window as any).google.maps;
+      if (gmaps && gmaps.places) {
+        const stopAutocomplete = new gmaps.places.Autocomplete(
+          stopAutocompleteRef.current,
+          {
+            types: ["establishment", "geocode"],
+          }
+        );
+        stopAutocomplete.addListener("place_changed", () => {
+          const place = stopAutocomplete.getPlace();
+          if (place.geometry) {
+            setStopAddress(place.formatted_address || place.name || "");
+          }
+        });
+      }
+    }
+  }, [showStopModal]);
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       <div className="bg-gray-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-3">
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <input
                 ref={originInputRef}
                 type="text"
-                placeholder="Search origin location..."
-                className="w-full px-4 py-3 mb-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="Origin..."
+                className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               />
               <input
                 ref={destinationInputRef}
                 type="text"
-                placeholder="Search destination location..."
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="Destination..."
+                className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               />
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={optimizeRoute}
-                disabled={!origin || !destination || isLoading}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors min-w-[120px] flex items-center justify-center"
-              >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  "Optimize"
-                )}
-              </button>
-              {waypoints.length > 0 && (
+              <div className="flex gap-2 justify-end">
                 <button
-                  onClick={clearAll}
-                  className="px-4 py-3 text-gray-600 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-lg font-medium transition-colors"
+                  type="button"
+                  onClick={openStopModal}
+                  className="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors min-w-[100px] flex items-center justify-center text-sm"
+                  title="Add Stop"
                 >
-                  Clear
+                  <svg
+                    className="w-5 h-5 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  Add Stop
                 </button>
-              )}
+                <button
+                  onClick={optimizeRoute}
+                  disabled={!origin || !destination || isLoading}
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors min-w-[100px] flex items-center justify-center text-sm"
+                >
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    "Optimize"
+                  )}
+                </button>
+                {(waypoints.length > 0 || origin || destination) && (
+                  <button
+                    onClick={clearAll}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-lg font-medium transition-colors text-sm"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {(totalDistance || totalDuration) && (
-        <div className="bg-blue-50 border-b border-blue-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 text-sm font-medium text-blue-900">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+      {showStopModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs mx-auto">
+            <h2 className="text-lg font-semibold mb-3">Add Stop</h2>
+            <input
+              ref={stopAutocompleteRef}
+              type="text"
+              value={stopAddress}
+              onChange={(e) => setStopAddress(e.target.value)}
+              placeholder="Enter stop address..."
+              className="w-full px-3 py-2 mb-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            />
+            <div className="mb-3">
+              <h3 className="text-sm font-medium mb-1">Current Stops</h3>
+              <ul className="space-y-1">
+                {waypoints.map((wp, idx) => (
+                  <li
+                    key={wp.id}
+                    className="flex items-center justify-between bg-gray-50 px-2 py-1 rounded"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                    />
-                  </svg>
-                  {totalDistance}
-                </div>
-                <div className="flex items-center gap-2 text-sm font-medium text-blue-900">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  {totalDuration}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {waypoints.length > 0 && (
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <h3 className="text-sm font-medium text-gray-900 mb-3">
-              Route Points ({waypoints.length})
-            </h3>
-            <div className="space-y-2 max-h-32 overflow-y-auto">
-              {waypoints.map((waypoint, index) => (
-                <div
-                  key={waypoint.id}
-                  className="flex items-center justify-between bg-gray-50 p-3 rounded-lg"
-                >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-medium">
-                      {index + 1}
-                    </span>
-                    <span className="text-sm text-gray-900 truncate">
-                      {waypoint.name}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => removeWaypoint(waypoint.id)}
-                    className="flex-shrink-0 ml-2 text-gray-400 hover:text-red-500 transition-colors"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                    <span className="truncate text-xs">{wp.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeWaypoint(wp.id)}
+                      className="ml-2 text-red-500 hover:text-red-700 text-xs px-2 py-1 rounded"
+                      title="Remove stop"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              ))}
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={closeStopModal}
+                className="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700 font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddStop}
+                className="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-white font-medium"
+              >
+                Add
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="relative">
+      <div className="relative flex-1 flex flex-col">
         <div
           ref={mapRef}
-          className="w-full bg-gray-100"
-          style={{
-            height: `calc(100vh - ${waypoints.length > 0 ? "280px" : "200px"})`,
-            minHeight: "400px",
-          }}
+          className="w-full h-full bg-gray-100 rounded-lg shadow flex-1"
+          style={{ minHeight: "300px" }}
         />
+        <button
+          type="button"
+          onClick={recenterMap}
+          className="fixed bottom-6 right-6 z-50 bg-white border border-gray-300 shadow-lg rounded-full w-12 h-12 flex items-center justify-center hover:bg-blue-50 transition-colors"
+          title="Recenter Map"
+        >
+          <svg
+            className="w-6 h-6 text-blue-600"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 8v4l3 3"
+            />
+          </svg>
+        </button>
 
         {!isMapReady && (
           <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
