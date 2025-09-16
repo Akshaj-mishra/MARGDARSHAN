@@ -210,27 +210,27 @@ export default function DashboardPage() {
             <div className="bg-yellow-100 dark:bg-yellow-100/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
               <FaTruck className="text-yellow-300 dark:text-yellow-300 text-2xl" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Fleet Overview</h3>
-            <p className="text-gray-500 dark:text-gray-400">Monitor your entire fleet in real-time</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Current Route</h3>
+            <p className="text-gray-500 dark:text-gray-400">See your current assigned route</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 ">
-          <div className="bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow">
-                      <div className="bg-yellow-100 dark:bg-yellow-100/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FaTruck className="text-yellow-300 dark:text-yellow-300 text-4xl" />
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Documents</h3>
-                      <p className="text-gray-500 dark:text-gray-400">See and upload all your vehicle documents</p>
-                  </div>
-          
-          <div className="bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow ">
-                      <div className="bg-yellow-100 dark:bg-yellow-100/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FaTruck className="text-yellow-300 dark:text-yellow-300 text-2xl" />
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Message</h3>
-                      <p className="text-gray-500 dark:text-gray-400">Announce/Message the driver</p>
-                  </div>  
+        <div className="bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow">
+            <div className="bg-yellow-100 dark:bg-yellow-100/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaTruck className="text-yellow-300 dark:text-yellow-300 text-2xl" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Documents</h3>
+            <p className="text-gray-500 dark:text-gray-400">See Your vehicle documents</p>
+        </div>
+
+        <div className="bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow">
+            <div className="bg-yellow-100 dark:bg-yellow-100/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaTruck className="text-yellow-300 dark:text-yellow-300 text-2xl" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Message</h3>
+            <p className="text-gray-500 dark:text-gray-400">Message the owner</p>
+        </div>
         </div>
         {/* Stats Overview with Edit Options */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -243,8 +243,8 @@ export default function DashboardPage() {
                 <FaTruck className="text-xl text-yellow-300 dark:text-yellow-300" />
               </div>
               <div className="ml-4">
-                <h3 className="text-sm text-gray-500 dark:text-gray-400">Total Vehicles</h3>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">42</p>
+                <h3 className="text-sm text-gray-500 dark:text-gray-400">Total assigned routes</h3>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">3</p>
               </div>
             </div>
           </div>
@@ -258,8 +258,8 @@ export default function DashboardPage() {
                 <FaCheckCircle className="text-xl text-yellow-300 dark:text-yellow-300" />
               </div>
               <div className="ml-4">
-                <h3 className="text-sm text-gray-500 dark:text-gray-400">Active Vehicles</h3>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">28</p>
+                <h3 className="text-sm text-gray-500 dark:text-gray-400">Active Active</h3>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white"><button></button></p>
               </div>
             </div>
           </div>
@@ -288,8 +288,8 @@ export default function DashboardPage() {
                 <FaExclamationTriangle className="text-xl text-yellow-300 dark:text-yellow-300" />
               </div>
               <div className="ml-4">
-                <h3 className="text-sm text-gray-500 dark:text-gray-400">Issues</h3>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">3</p>
+                <h3 className="text-sm text-gray-500 dark:text-gray-400">Mark an Issue</h3>
+                <p className=" font-bold text-gray-900 dark:text-white">Select issue type</p>
               </div>
             </div>
           </div>
