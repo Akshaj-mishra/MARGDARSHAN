@@ -23,11 +23,94 @@ function RouteOptimizerComponent() {
   const [isMapReady, setIsMapReady] = useState(false);
   const [origin, setOrigin] = useState<any>(null);
   const [destination, setDestination] = useState<any>(null);
+  const [routePolyline, setRoutePolyline] = useState<any>(null);
   const originInputRef = useRef<HTMLInputElement>(null);
   const destinationInputRef = useRef<HTMLInputElement>(null);
   const stopInputRef = useRef<HTMLInputElement>(null);
   const [showStopModal, setShowStopModal] = useState(false);
   const [stopAddress, setStopAddress] = useState("");
+  const [searchOverlay, setSearchOverlay] = useState<{
+    open: boolean;
+    mode: "origin" | "destination" | null;
+  }>({ open: false, mode: null });
+  const overlayInputRef = useRef<HTMLInputElement>(null);
+  const dragIndexRef = useRef<number | null>(null);
+
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      const el = document.documentElement;
+      if (el.classList.contains("dark")) return true;
+      const stored = localStorage.getItem("theme");
+      if (stored === "dark") return true;
+      if (stored === "light") return false;
+      return (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      );
+    } catch (e) {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      const listener = (e: MediaQueryListEvent) => setIsDark(e.matches);
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      if (mq && mq.addEventListener) mq.addEventListener("change", listener);
+      if (isDark) document.documentElement.classList.add("dark");
+      else document.documentElement.classList.remove("dark");
+      return () => {
+        if (mq && mq.removeEventListener)
+          mq.removeEventListener("change", listener);
+      };
+    } catch (e) {
+      // noop
+    }
+  }, [isDark]);
+
+  const toggleTheme = () => {
+    const next = !isDark;
+    setIsDark(next);
+    try {
+      localStorage.setItem("theme", next ? "dark" : "light");
+      if (next) document.documentElement.classList.add("dark");
+      else document.documentElement.classList.remove("dark");
+    } catch (e) {}
+  };
+
+  const openSearchOverlay = (mode: "origin" | "destination") => {
+    setSearchOverlay({ open: true, mode });
+    setTimeout(() => overlayInputRef.current?.focus(), 50);
+  };
+  const closeSearchOverlay = () =>
+    setSearchOverlay({ open: false, mode: null });
+
+  useEffect(() => {
+    if (!searchOverlay.open || typeof window === "undefined") return;
+    const gmaps = (window as any).google?.maps;
+    if (!gmaps || !overlayInputRef.current) return;
+    const ac = new gmaps.places.Autocomplete(overlayInputRef.current, {
+      types: ["establishment", "geocode"],
+    });
+    ac.addListener("place_changed", () => {
+      const place = ac.getPlace();
+      if (!place || !place.geometry) return;
+      if (searchOverlay.mode === "origin") {
+        setOrigin(place.geometry.location);
+        if (originInputRef.current)
+          originInputRef.current.value =
+            place.formatted_address || place.name || "";
+      } else if (searchOverlay.mode === "destination") {
+        setDestination(place.geometry.location);
+        if (destinationInputRef.current)
+          destinationInputRef.current.value =
+            place.formatted_address || place.name || "";
+      }
+      closeSearchOverlay();
+    });
+    return () => {};
+  }, [searchOverlay.open, searchOverlay.mode]);
 
   const mapStyles = [
     {
@@ -99,18 +182,18 @@ function RouteOptimizerComponent() {
       }
 
       const existingScript = document.querySelector(
-        'script[src*="maps.googleapis.com"]'
+        'script[src*="maps.googleapis.com"]',
       );
       if (existingScript) {
         existingScript.addEventListener("load", () => resolve());
         existingScript.addEventListener("error", () =>
-          reject(new Error("Failed to load Google Maps"))
+          reject(new Error("Failed to load Google Maps")),
         );
         return;
       }
 
       const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places,geometry`;
       script.async = true;
       script.defer = true;
 
@@ -172,39 +255,39 @@ function RouteOptimizerComponent() {
             if (originInputRef.current && gmaps.places) {
               const originAutocomplete = new gmaps.places.Autocomplete(
                 originInputRef.current,
-                {
-                  types: ["establishment", "geocode"],
-                }
+                { types: ["establishment", "geocode"] },
               );
               originAutocomplete.bindTo("bounds", mapInstance);
               originAutocomplete.addListener("place_changed", () => {
                 const place = originAutocomplete.getPlace();
                 if (place.geometry && isMounted) {
                   setOrigin(place.geometry.location);
-                  originInputRef.current.value =
-                    place.formatted_address || place.name || "";
+                  if (originInputRef.current)
+                    originInputRef.current.value =
+                      place.formatted_address || place.name || "";
                 }
               });
             }
+
             if (destinationInputRef.current && gmaps.places) {
               const destAutocomplete = new gmaps.places.Autocomplete(
                 destinationInputRef.current,
-                {
-                  types: ["establishment", "geocode"],
-                }
+                { types: ["establishment", "geocode"] },
               );
               destAutocomplete.bindTo("bounds", mapInstance);
               destAutocomplete.addListener("place_changed", () => {
                 const place = destAutocomplete.getPlace();
                 if (place.geometry && isMounted) {
                   setDestination(place.geometry.location);
-                  destinationInputRef.current.value =
-                    place.formatted_address || place.name || "";
+                  if (destinationInputRef.current)
+                    destinationInputRef.current.value =
+                      place.formatted_address || place.name || "";
                 }
               });
             }
+
             const searchInput = document.getElementById(
-              "search-input"
+              "search-input",
             ) as HTMLInputElement;
             if (searchInput && gmaps.places && isMounted) {
               const autocomplete = new gmaps.places.Autocomplete(searchInput, {
@@ -214,7 +297,7 @@ function RouteOptimizerComponent() {
               autocomplete.addListener("place_changed", () => {
                 const place = autocomplete.getPlace();
                 if (place.geometry && isMounted) {
-                  addWaypoint(place);
+                  if (typeof addWaypoint === "function") addWaypoint(place);
                 }
               });
             }
@@ -239,94 +322,78 @@ function RouteOptimizerComponent() {
     };
   }, [loadGoogleMapsScript, clearMarkers]);
 
-  const addWaypoint = useCallback(
-    (place: any) => {
-      if (!map) return;
-
-      const gmaps = (window as any).google.maps;
-      const newWaypoint: Waypoint = {
-        location: place.geometry?.location,
-        name: place.name || place.formatted_address || "Unknown",
-        id: Date.now(),
-      };
-
-      setWaypoints((prev: Waypoint[]) => {
-        const updatedWaypoints = [...prev, newWaypoint];
-
-        const marker = new gmaps.Marker({
-          position: newWaypoint.location,
-          map: map,
-          title: newWaypoint.name,
-          icon: {
-            url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-            <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 0C7.16 0 0 7.16 0 16C0 28 16 40 16 40S32 28 32 16C32 7.16 24.84 0 16 0Z" fill="#3b82f6"/>
-              <circle cx="16" cy="16" r="8" fill="white"/>
-              <text x="16" y="20" text-anchor="middle" fill="#3b82f6" font-size="12" font-weight="600">${updatedWaypoints.length}</text>
-            </svg>
-          `)}`,
-            scaledSize: new gmaps.Size(32, 40),
-            anchor: new gmaps.Point(16, 40),
-          },
-        });
-
-        markersRef.current.push(marker);
-        return updatedWaypoints;
-      });
-
-      setSearchQuery("");
-
-      const searchInput = document.getElementById(
-        "search-input"
-      ) as HTMLInputElement;
-      if (searchInput) {
-        searchInput.value = "";
-      }
-    },
-    [map]
-  );
-
   const optimizeRoute = async () => {
     if (!origin || !destination) {
       alert("Please select both origin and destination locations");
       return;
     }
     setIsLoading(true);
-    const gmaps = (window as any)["google"].maps;
-    const request = {
-      origin: origin,
-      destination: destination,
-      waypoints: waypoints.map((wp: any) => ({
-        location: wp.location,
-        stopover: true,
-      })),
-      optimizeWaypoints: true,
-      travelMode: gmaps.TravelMode.DRIVING,
-      unitSystem: gmaps.UnitSystem.METRIC,
-      avoidHighways: false,
-      avoidTolls: false,
-    };
     try {
-      const result: any = await new Promise((resolve, reject) => {
-        directionsService.route(request, (result: any, status: any) => {
-          if (status === "OK") {
-            resolve(result);
-          } else {
-            reject(status);
-          }
-        });
+      const gmaps = (window as any).google.maps;
+      const toPlain = (loc: any) => ({
+        lat: typeof loc.lat === "function" ? loc.lat() : loc.lat,
+        lng: typeof loc.lng === "function" ? loc.lng() : loc.lng,
       });
-      directionsRenderer.setDirections(result);
-      let totalDist = 0;
-      let totalTime = 0;
-      (result.routes[0].legs as any[]).forEach((leg: any) => {
-        totalDist += leg.distance.value;
-        totalTime += leg.duration.value;
+      const backendUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      const body = {
+        origin: toPlain(origin),
+        destination: toPlain(destination),
+        waypoints: waypoints.map((wp: any) => toPlain(wp.location)),
+        optimize: true,
+        travelMode: "driving",
+        unitSystem: "metric",
+        avoidHighways: false,
+        avoidTolls: false,
+      };
+      const resp = await fetch(`${backendUrl}/route`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       });
-      setTotalDistance((totalDist / 1000).toFixed(1) + " km");
-      setTotalDuration(Math.floor(totalTime / 60) + " min");
-    } catch (error) {
-      alert("Could not calculate route: " + error);
+      if (!resp.ok) {
+        const msg = await resp.text();
+        throw new Error(msg || "Route API error");
+      }
+      const data = await resp.json();
+
+      if (routePolyline && routePolyline.setMap) {
+        routePolyline.setMap(null);
+      }
+      const path = gmaps.geometry.encoding.decodePath(data.polyline);
+      const polyline = new gmaps.Polyline({
+        path,
+        strokeColor: "#FFD600",
+        strokeOpacity: 1,
+        strokeWeight: 4,
+      });
+      polyline.setMap(map);
+      setRoutePolyline(polyline);
+
+      if (map && path.length) {
+        if (data.bounds?.northeast && data.bounds?.southwest) {
+          const bounds = new gmaps.LatLngBounds(
+            new gmaps.LatLng(
+              data.bounds.southwest.lat,
+              data.bounds.southwest.lng,
+            ),
+            new gmaps.LatLng(
+              data.bounds.northeast.lat,
+              data.bounds.northeast.lng,
+            ),
+          );
+          map.fitBounds(bounds);
+        } else {
+          const bounds = new gmaps.LatLngBounds();
+          path.forEach((pt: any) => bounds.extend(pt));
+          map.fitBounds(bounds);
+        }
+      }
+
+      setTotalDistance(data.distance_text || "");
+      setTotalDuration(data.duration_text || "");
+    } catch (error: any) {
+      alert("Could not calculate route: " + error?.message || error);
     }
     setIsLoading(false);
   };
@@ -335,8 +402,9 @@ function RouteOptimizerComponent() {
     const newWaypoints = waypoints.filter((wp: Waypoint) => wp.id !== id);
     setWaypoints(newWaypoints);
 
-    if (directionsRenderer) {
-      directionsRenderer.setDirections({ routes: [] });
+    if (routePolyline && routePolyline.setMap) {
+      routePolyline.setMap(null);
+      setRoutePolyline(null);
     }
     clearMarkers();
     setTotalDistance("");
@@ -373,8 +441,9 @@ function RouteOptimizerComponent() {
   const clearAll = () => {
     setWaypoints([]);
     clearMarkers();
-    if (directionsRenderer) {
-      directionsRenderer.setDirections({ routes: [] });
+    if (routePolyline && routePolyline.setMap) {
+      routePolyline.setMap(null);
+      setRoutePolyline(null);
     }
     setTotalDistance("");
     setTotalDuration("");
@@ -387,7 +456,7 @@ function RouteOptimizerComponent() {
     if (originInputRef.current) originInputRef.current.value = "";
     if (destinationInputRef.current) destinationInputRef.current.value = "";
     const searchInput = document.getElementById(
-      "search-input"
+      "search-input",
     ) as HTMLInputElement;
     if (searchInput) searchInput.value = "";
     setSearchQuery("");
@@ -400,43 +469,81 @@ function RouteOptimizerComponent() {
     }
   };
 
+  const addWaypoint = useCallback(
+    (place: any) => {
+      if (!map) return;
+      const gmaps = (window as any).google.maps;
+      const location = place.geometry?.location || place.geometry || null;
+      const name = place.name || place.formatted_address || "Unknown";
+      const newWaypoint: Waypoint = {
+        location,
+        name,
+        id: Date.now(),
+      };
+
+      setWaypoints((prev: Waypoint[]) => {
+        const updatedWaypoints = [...prev, newWaypoint];
+
+        const marker = new gmaps.Marker({
+          position: newWaypoint.location,
+          map: map,
+          title: newWaypoint.name,
+          icon: {
+            url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+              <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 0C7.16 0 0 7.16 0 16C0 28 16 40 16 40S32 28 32 16C32 7.16 24.84 0 16 0Z" fill="#3b82f6"/>
+                <circle cx="16" cy="16" r="8" fill="white"/>
+                <text x="16" y="20" text-anchor="middle" fill="#3b82f6" font-size="12" font-weight="600">${updatedWaypoints.length}</text>
+              </svg>
+            `)}`,
+            scaledSize: new gmaps.Size(32, 40),
+            anchor: new gmaps.Point(16, 40),
+          },
+        });
+
+        markersRef.current.push(marker);
+        return updatedWaypoints;
+      });
+
+      const searchInput = document.getElementById(
+        "search-input",
+      ) as HTMLInputElement;
+      if (searchInput) searchInput.value = "";
+    },
+    [map],
+  );
+
   const openStopModal = () => setShowStopModal(true);
   const closeStopModal = () => {
     setShowStopModal(false);
     setStopAddress("");
   };
-  const handleAddStop = () => {
-    if (!stopAddress || !map) return;
-    const gmaps = (window as any).google.maps;
-    const geocoder = new gmaps.Geocoder();
-    geocoder.geocode({ address: stopAddress }, (results: any, status: any) => {
-      if (status === "OK" && results[0].geometry) {
-        addWaypoint({
-          geometry: { location: results[0].geometry.location },
-          name: stopAddress,
-          formatted_address: results[0].formatted_address,
-        });
-        closeStopModal();
-      } else {
-        alert("Could not find location for stop: " + stopAddress);
-      }
-    });
-  };
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const interval = setInterval(() => {
-        if ((window as any)["google"] && (window as any)["google"].maps) {
-          clearInterval(interval);
-          initializeMap();
-        }
-      }, 100);
-      return () => {
-        clearInterval(interval);
-        if (directionsRenderer) directionsRenderer.setMap(null);
-      };
+  const handleAddStop = async () => {
+    if (!stopAddress || !map) return;
+    try {
+      const backendUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      const resp = await fetch(
+        `${backendUrl}/geocode?query=${encodeURIComponent(stopAddress)}`,
+      );
+      if (!resp.ok) {
+        const msg = await resp.text();
+        throw new Error(msg || "Geocode API error");
+      }
+      const data = await resp.json();
+      const gmaps = (window as any).google.maps;
+      const loc = new gmaps.LatLng(data.lat, data.lng);
+      addWaypoint({
+        geometry: { location: loc },
+        name: data.formatted_address || stopAddress,
+        formatted_address: data.formatted_address || stopAddress,
+      });
+      closeStopModal();
+    } catch (e: any) {
+      alert("Could not find location for stop: " + (e?.message || stopAddress));
     }
-  }, []);
+  };
 
   const stopAutocompleteRef = useRef<HTMLInputElement>(null);
 
@@ -452,7 +559,7 @@ function RouteOptimizerComponent() {
           stopAutocompleteRef.current,
           {
             types: ["establishment", "geocode"],
-          }
+          },
         );
         stopAutocomplete.addListener("place_changed", () => {
           const place = stopAutocomplete.getPlace();
@@ -464,33 +571,100 @@ function RouteOptimizerComponent() {
     }
   }, [showStopModal]);
 
+  const reorderWaypoints = (fromIndex: number, toIndex: number) => {
+    setWaypoints((prev) => {
+      const items = [...prev];
+      const [moved] = items.splice(fromIndex, 1);
+      items.splice(toIndex, 0, moved);
+      if (map) {
+        clearMarkers();
+        const gmaps = (window as any).google.maps;
+        items.forEach((wp: Waypoint, idx: number) => {
+          const marker = new gmaps.Marker({
+            position: wp.location,
+            map: map,
+            title: wp.name,
+            icon: {
+              url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M16 0C7.16 0 0 7.16 0 16C0 28 16 40 16 40S32 28 32 16C32 7.16 24.84 0 16 0Z" fill="#3b82f6"/>
+                  <circle cx="16" cy="16" r="8" fill="white"/>
+                  <text x="16" y="20" text-anchor="middle" fill="#3b82f6" font-size="12" font-weight="600">${
+                    idx + 1
+                  }</text>
+                </svg>
+              `)}`,
+              scaledSize: new gmaps.Size(32, 40),
+              anchor: new gmaps.Point(16, 40),
+            },
+          });
+          markersRef.current.push(marker);
+        });
+      }
+      return items;
+    });
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <div className="bg-gray-50 border-b border-gray-200">
+      <div className="absolute top-4 left-0 right-0 z-50 pointer-events-auto">
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-3">
           <div className="flex flex-col gap-2">
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-              <input
-                ref={originInputRef}
-                type="text"
-                placeholder="Origin..."
-                className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              />
+            <div
+              className={`flex flex-col sm:flex-row gap-2 sm:gap-4 rounded-xl p-2 shadow-sm ${
+                isDark
+                  ? "bg-black/70 text-white backdrop-blur-sm"
+                  : "bg-white/80 text-gray-900 backdrop-blur-md"
+              }`}
+            >
+              <div className="flex-1">
+                {origin ? (
+                  <button
+                    onClick={() => openSearchOverlay("origin")}
+                    className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm"
+                    title="Edit origin"
+                  >
+                    <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                      A
+                    </span>
+                    <span className="truncate">
+                      {originInputRef.current?.value || "Origin"}
+                    </span>
+                  </button>
+                ) : (
+                  <input
+                    ref={originInputRef}
+                    type="text"
+                    placeholder="Start location (Tap to search/set on map)"
+                    onFocus={() => openSearchOverlay("origin")}
+                    className={`w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      isDark
+                        ? "bg-gray-800 border border-gray-700 text-white placeholder-gray-400"
+                        : "bg-white border border-gray-300 text-gray-900 placeholder-gray-500"
+                    }`}
+                  />
+                )}
+              </div>
               <input
                 ref={destinationInputRef}
                 type="text"
-                placeholder="Destination..."
-                className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                placeholder="End location (Tap to search/set on map)"
+                onFocus={() => openSearchOverlay("destination")}
+                className={`flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  isDark
+                    ? "bg-gray-800 border border-gray-700 text-white placeholder-gray-400"
+                    : "bg-white border border-gray-300 text-gray-900 placeholder-gray-500"
+                }`}
               />
               <div className="flex gap-2 justify-end">
                 <button
                   type="button"
                   onClick={openStopModal}
-                  className="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors min-w-[100px] flex items-center justify-center text-sm"
+                  className="w-10 h-10 bg-yellow-500 hover:bg-yellow-600 rounded-full flex items-center justify-center shadow"
                   title="Add Stop"
                 >
                   <svg
-                    className="w-5 h-5 mr-1"
+                    className="w-5 h-5 text-black"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
@@ -502,17 +676,16 @@ function RouteOptimizerComponent() {
                       d="M12 4v16m8-8H4"
                     />
                   </svg>
-                  Add Stop
                 </button>
                 <button
                   onClick={optimizeRoute}
                   disabled={!origin || !destination || isLoading}
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors min-w-[100px] flex items-center justify-center text-sm"
+                  className={`px-5 py-2 bg-blue-700 hover:bg-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-colors min-w-[100px] flex items-center justify-center text-sm`}
                 >
                   {isLoading ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   ) : (
-                    "Optimize"
+                    "Optimize Route"
                   )}
                 </button>
                 {(waypoints.length > 0 || origin || destination) && (
@@ -523,6 +696,37 @@ function RouteOptimizerComponent() {
                     Clear
                   </button>
                 )}
+
+                <button
+                  onClick={toggleTheme}
+                  title={
+                    isDark ? "Switch to light mode" : "Switch to dark mode"
+                  }
+                  className="ml-2 w-10 h-10 bg-transparent rounded-full flex items-center justify-center text-sm border border-transparent hover:border-gray-300"
+                >
+                  {isDark ? (
+                    <svg
+                      className="w-5 h-5 text-yellow-300"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-5 h-5 text-gray-700"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <circle cx="12" cy="12" r="5" />
+                      <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
+                    </svg>
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -531,7 +735,11 @@ function RouteOptimizerComponent() {
 
       {showStopModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs mx-auto">
+          <div
+            className={`rounded-lg shadow-lg p-6 w-full max-w-xs mx-auto ${
+              isDark ? "bg-gray-900 text-white" : "bg-white text-gray-900"
+            }`}
+          >
             <h2 className="text-lg font-semibold mb-3">Add Stop</h2>
             <input
               ref={stopAutocompleteRef}
@@ -539,7 +747,11 @@ function RouteOptimizerComponent() {
               value={stopAddress}
               onChange={(e) => setStopAddress(e.target.value)}
               placeholder="Enter stop address..."
-              className="w-full px-3 py-2 mb-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              className={`w-full px-3 py-2 mb-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 ${
+                isDark
+                  ? "bg-gray-800 border border-gray-700 text-white placeholder-gray-400"
+                  : "bg-white border border-gray-300 text-gray-900 placeholder-gray-500"
+              }`}
             />
             <div className="mb-3">
               <h3 className="text-sm font-medium mb-1">Current Stops</h3>
@@ -547,17 +759,42 @@ function RouteOptimizerComponent() {
                 {waypoints.map((wp, idx) => (
                   <li
                     key={wp.id}
-                    className="flex items-center justify-between bg-gray-50 px-2 py-1 rounded"
+                    draggable
+                    onDragStart={(e) => {
+                      dragIndexRef.current = idx;
+                      e.dataTransfer?.setData("text/plain", String(idx));
+                    }}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const from =
+                        dragIndexRef.current ??
+                        Number(e.dataTransfer.getData("text/plain"));
+                      const to = idx;
+                      if (from !== null && from !== to)
+                        reorderWaypoints(from, to);
+                      dragIndexRef.current = null;
+                    }}
+                    className={`flex items-center justify-between px-2 py-1 rounded ${
+                      isDark ? "bg-gray-800" : "bg-gray-50"
+                    }`}
                   >
-                    <span className="truncate text-xs">{wp.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeWaypoint(wp.id)}
-                      className="ml-2 text-red-500 hover:text-red-700 text-xs px-2 py-1 rounded"
-                      title="Remove stop"
-                    >
-                      Remove
-                    </button>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="cursor-move text-gray-400">≡</span>
+                      <span className="truncate text-xs">
+                        {idx + 1}. {wp.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => removeWaypoint(wp.id)}
+                        className="text-red-500 hover:text-red-700 text-xs px-2 py-1 rounded"
+                        title="Remove stop"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -565,16 +802,54 @@ function RouteOptimizerComponent() {
             <div className="flex gap-2 justify-end">
               <button
                 onClick={closeStopModal}
-                className="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700 font-medium"
+                className={`px-3 py-2 rounded-lg font-medium ${
+                  isDark
+                    ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                }`}
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddStop}
-                className="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-white font-medium"
+                className="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-black font-medium"
               >
                 Add
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {searchOverlay.open && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-start pt-12">
+          <div className="w-full max-w-2xl mx-auto px-4">
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <input
+                  ref={overlayInputRef}
+                  type="search"
+                  placeholder={
+                    searchOverlay.mode === "origin"
+                      ? "Search origin..."
+                      : "Search destination..."
+                  }
+                  className={`w-full px-3 py-3 rounded-lg focus:outline-none ${
+                    isDark
+                      ? "bg-gray-900 border border-gray-700 text-white placeholder-gray-400"
+                      : "bg-white border border-gray-300 text-gray-900 placeholder-gray-500"
+                  }`}
+                />
+                <button
+                  onClick={closeSearchOverlay}
+                  className="px-3 py-2 text-sm text-gray-700"
+                >
+                  Cancel
+                </button>
+              </div>
+              <p className="text-xs text-gray-500">
+                Tap a suggestion to set the {searchOverlay.mode}
+              </p>
             </div>
           </div>
         </div>
