@@ -1,6 +1,5 @@
 'use client';
-import Navbar from './Navbar';
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FaTruckMoving,
   FaMoon,
@@ -17,82 +16,39 @@ import {
 } from 'react-icons/fa';
 
 export default function DashboardPage() {
+  // Dark mode state
   const [darkMode, setDarkMode] = useState(false);
 
+  // Sync theme on mount (client-only)
   useEffect(() => {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setDarkMode(true);
-    }
-  }, []);
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);}
-
-  // Mounted flag to avoid mismatches during hydration
-  const [mounted, setMounted] = useState(false);
-  // Ref to track if Tailwind CSS is injected
-  const tailwindInjectedRef = useRef(false);
-
-  // Inline Tailwind CSS - Injected inside the component to avoid hook errors
-  const inlineTailwindCSS = `
-    @tailwind base;
-    @tailwind components;
-    @tailwind utilities;
-
-    @layer base {
-      html {
-        @apply bg-gray-100 dark:bg-gray-900;
-      }
-    }
-  `;
-
-  // Inject Tailwind CSS inline (moved inside component)
-  useLayoutEffect(() => {
-    if (typeof window === 'undefined' || tailwindInjectedRef.current) return;
-
-    // Remove existing style tag if any
-    const existing = document.getElementById('tailwind-inline');
-    if (existing) existing.remove();
-
-    // Create new style tag
-    const style = document.createElement('style');
-    style.id = 'tailwind-inline';
-    style.textContent = inlineTailwindCSS;
-    document.head.appendChild(style);
-
-    tailwindInjectedRef.current = true;
-  }, []);
-
-  // Apply initial theme synchronously before paint to avoid flash
-  useLayoutEffect(() => {
     if (typeof window === 'undefined') return;
 
-    try {
-      const savedTheme = localStorage.getItem('theme'); // 'dark' | 'light' | null
-      const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const initialDark = savedTheme === 'System' || (!savedTheme && systemPrefersDark);
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia?.('(prefers-color-scheme: dark)')?.matches;
 
-      setDarkMode(initialDark);
-      document.documentElement.classList.toggle('dark', initialDark);
-    } catch (e) {
-      // Ignore storage errors
-    } finally {
-      setMounted(true);
+    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+      setDarkMode(true);
+      document.documentElement.classList.add('dark');
+    } else {
+      setDarkMode(false);
+      document.documentElement.classList.remove('dark');
     }
   }, []);
-
-  // Keep localStorage in sync if darkMode changes after mount
-  useEffect(() => {
-    if (!mounted) return;
-    try {
-      localStorage.setItem('theme', darkMode ? 'dark' : 'light');
-    } catch (e) {}
-    document.documentElement.classList.toggle('dark', darkMode);
-  }, [darkMode, mounted]);
 
   // Toggle theme handler
   const handleThemeToggle = () => {
-    setDarkMode(prev => !prev);
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+
+    if (typeof window !== 'undefined') {
+      if (newDarkMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+    }
   };
 
   // Calculator popup state
@@ -132,10 +88,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-[#6A6767] min-h-screen transition-colors duration-200 relative">
-      <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+    <div className="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors duration-200 relative">
       {/* Navbar */}
-      {/* <nav className="bg-white dark:bg-gray-800 shadow-md">
+      <nav className="bg-white dark:bg-gray-800 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -151,96 +106,85 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="flex items-center">
+              {/* removed previous navbar toggle - floating button used */}
               <div className="ml-4 flex items-center md:ml-6">
-                <button
-                  onClick={handleThemeToggle}
-                  title={darkMode ? 'Switch to light' : 'Switch to dark'}
-                  aria-label="Toggle theme"
-                  aria-pressed={darkMode}
-                  className={`p-2 rounded-full focus:outline-none transition-colors duration-200 ${
-                    darkMode ? 'bg-gray-800 text-yellow-300 hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  {darkMode ? <FaSun className="text-lg" /> : <FaMoon className="text-lg" />}
-                </button>
-                <a href="/frontend/loginpage" className="ml-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-white px-4 py-2 rounded-md text-sm font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">Login</a>
+                <a href="/frontend/loginpage" className="bg-white dark:bg-gray-700 text-gray-700 dark:text-white px-4 py-2 rounded-md text-sm font-medium border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">Login</a>
                 <a href="/frontend/signuppage" className="ml-2 bg-orange-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-orange-600">Sign Up</a>
               </div>
             </div>
           </div>
         </div>
-      </nav> */}
+      </nav>
+
+      {/* floating top-right theme toggle (fixed) */}
+      <button
+        onClick={handleThemeToggle}
+        title={darkMode ? 'Switch to light' : 'Switch to dark'}
+        aria-label="Toggle theme"
+        className={`fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg focus:outline-none transition-colors duration-200 ${
+          darkMode ? 'bg-gray-800 text-yellow-300 hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-gray-100'
+        }`}
+      >
+        {darkMode ? <FaSun className="text-lg" /> : <FaMoon className="text-lg" />}
+      </button>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-[#6A6767] ">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
-        <div className="mb-8 text-center p-15">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome to <div className="ml-4 mr-4 inline-block text-yellow-300 font-Yashie_Demo">
-           Markdarshan</div></h1>
-          <p className="mt-2 text-lg text-gray-900 dark:text-gray-400">Your Intelligent Truck Routing and Fleet Management System</p>
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome to Markdarshan</h1>
+          <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">Your Intelligent Truck Routing and Fleet Management System</p>
         </div>
 
-        
+        {/* Emergency SOS Button */}
+        <div className="mb-8 text-center">
+          <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-8 rounded-full text-lg flex items-center justify-center mx-auto animate-pulse">
+            <FaExclamationTriangle className="mr-2" /> EMERGENCY SOS
+          </button>
+        </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 ">
-          <a href="/routes-planner" className="route-card bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow block">
-            <div className="bg-blue-100 dark:bg-yellow-100/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaRoute className="text-yellow-300 dark:text-yellow-300 text-2xl" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <a href="/routes-planner" className="route-card bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow block">
+            <div className="bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaRoute className="text-blue-600 dark:text-blue-400 text-2xl" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Plan Routes</h3>
             <p className="text-gray-500 dark:text-gray-400">Create optimized routes for your fleet</p>
           </a>
 
-          <div className="bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow">
-            <div className="bg-yellow-100 dark:bg-yellow-100/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaGasPump className="text-yellow-300 dark:text-yellow-300 text-2xl" />
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow">
+            <div className="bg-green-100 dark:bg-green-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaGasPump className="text-green-600 dark:text-green-400 text-2xl" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Fuel Calculator</h3>
             <p className="text-gray-500 dark:text-gray-400">Calculate fuel costs for your trips</p>
             <button
-              className="mt-4 bg-yellow-300 cursor-pointer hover:bg-yellow-300 text-yellow-700 py-2 px-4 rounded-lg text-sm"
+              className="mt-4 bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-sm"
               onClick={() => setShowCalculator(true)}
             >
               Open Calculator
             </button>
           </div>
 
-          <div className="bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow">
-            <div className="bg-yellow-100 dark:bg-yellow-100/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaTruck className="text-yellow-300 dark:text-yellow-300 text-2xl" />
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow">
+            <div className="bg-purple-100 dark:bg-purple-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaTruck className="text-purple-600 dark:text-purple-400 text-2xl" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Fleet Overview</h3>
             <p className="text-gray-500 dark:text-gray-400">Monitor your entire fleet in real-time</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 ">
-          <div className="bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow">
-                      <div className="bg-yellow-100 dark:bg-yellow-100/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FaTruck className="text-yellow-300 dark:text-yellow-300 text-4xl" />
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Documents</h3>
-                      <p className="text-gray-500 dark:text-gray-400">See and upload all your vehicle documents</p>
-                  </div>
-          
-          <div className="bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 text-center hover:shadow-md transition-shadow ">
-                      <div className="bg-yellow-100 dark:bg-yellow-100/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FaTruck className="text-yellow-300 dark:text-yellow-300 text-2xl" />
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Message</h3>
-                      <p className="text-gray-500 dark:text-gray-400">Announce/Message the driver</p>
-                  </div>  
-        </div>
         {/* Stats Overview with Edit Options */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="stat-card bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 relative">
+          <div className="stat-card bg-white dark:bg-gray-800 rounded-lg shadow p-6 relative">
             <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
               <FaPlusCircle />
             </button>
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-yellow-100 dark:bg-yellow-100/30 text-yellow-300 dark:text-yellow-300">
-                <FaTruck className="text-xl text-yellow-300 dark:text-yellow-300" />
+              <div className="p-3 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                <FaTruck className="text-xl" />
               </div>
               <div className="ml-4">
                 <h3 className="text-sm text-gray-500 dark:text-gray-400">Total Vehicles</h3>
@@ -249,13 +193,13 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="stat-card bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 relative">
+          <div className="stat-card bg-white dark:bg-gray-800 rounded-lg shadow p-6 relative">
             <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
               <FaEdit />
             </button>
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-yellow-100 dark:bg-yellow-100/30 text-yellow-300 dark:text-yellow-300">
-                <FaCheckCircle className="text-xl text-yellow-300 dark:text-yellow-300" />
+              <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
+                <FaCheckCircle className="text-xl" />
               </div>
               <div className="ml-4">
                 <h3 className="text-sm text-gray-500 dark:text-gray-400">Active Vehicles</h3>
@@ -264,13 +208,13 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="stat-card bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 relative">
+          <div className="stat-card bg-white dark:bg-gray-800 rounded-lg shadow p-6 relative">
             <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
               <FaEdit />
             </button>
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-yellow-100 dark:bg-yellow-100/30 text-yellow-300 dark:text-yellow-300">
-                <FaRoute className="text-xl text-yellow-300 dark:text-yellow-300" />
+              <div className="p-3 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+                <FaRoute className="text-xl" />
               </div>
               <div className="ml-4">
                 <h3 className="text-sm text-gray-500 dark:text-gray-400">Active Routes</h3>
@@ -279,13 +223,13 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="stat-card bg-white dark:bg-[#2e2d2d] rounded-lg shadow p-6 relative">
+          <div className="stat-card bg-white dark:bg-gray-800 rounded-lg shadow p-6 relative">
             <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
               <FaEdit />
             </button>
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-yellow-100 dark:bg-yellow-100/30 text-yellow-300 dark:text-yellow-300">
-                <FaExclamationTriangle className="text-xl text-yellow-300 dark:text-yellow-300" />
+              <div className="p-3 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                <FaExclamationTriangle className="text-xl" />
               </div>
               <div className="ml-4">
                 <h3 className="text-sm text-gray-500 dark:text-gray-400">Issues</h3>
@@ -296,7 +240,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Metrics Section */}
-        <div className="bg-white dark:bg-[#2e2d2d] rounded-lg shadow mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-8">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="font-semibold text-gray-900 dark:text-white">Performance Metrics</h3>
           </div>
@@ -316,7 +260,7 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-500 dark:text-gray-400">Fuel Efficiency</p>
                 <div className="flex items-center">
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div className="bg-yellow-300 h-2 rounded-full" style={{ width: '72%' }}></div>
+                    <div className="bg-orange-500 h-2 rounded-full" style={{ width: '72%' }}></div>
                   </div>
                   <span className="ml-2 text-sm font-medium text-gray-900 dark:text-white">7.2 mpg</span>
                 </div>
@@ -333,8 +277,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="md:col-span-2 flex items-center justify-center ">
-              <div className="text-center p-6 bg-gray-50 dark:bg-[#181818] rounded-lg w-full">
+            <div className="md:col-span-2 flex items-center justify-center">
+              <div className="text-center p-6 bg-gray-50 dark:bg-gray-700 rounded-lg w-full">
                 <h4 className="font-medium text-gray-900 dark:text-white mb-4">Routes Overview</h4>
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-500 dark:text-gray-400">Completed Today:</span>
@@ -352,7 +296,7 @@ export default function DashboardPage() {
                   <span className="text-gray-500 dark:text-gray-400">Delayed:</span>
                   <span className="font-medium text-red-600 dark:text-red-400">2 routes</span>
                 </div>
-                <a href="/routes" className="mt-6 inline-block bg-yellow-300 hover:bg-yellow-300 text-yellow-700 py-2 px-4 rounded-lg text-sm">
+                <a href="/routes" className="mt-6 inline-block bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-sm">
                   View All Routes
                 </a>
               </div>
@@ -361,15 +305,15 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Activities */}
-        <div className="bg-white dark:bg-[#2e2d2d] rounded-lg shadow mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-8">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
             <h3 className="font-semibold text-gray-900 dark:text-white">Recent Activities</h3>
             <a href="/activities" className="text-sm text-orange-600 hover:text-orange-500 font-medium">View All</a>
           </div>
           <div className="p-4">
             <div className="flex items-center py-3 border-b border-gray-100 dark:border-gray-700">
-              <div className="bg-yellow-300 dark:bg-yellow-100/30 p-2 rounded-full">
-                <FaCheckCircle className="text-yellow-700 dark:text-yellow-300" />
+              <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-full">
+                <FaCheckCircle className="text-green-600 dark:text-green-400" />
               </div>
               <div className="ml-4">
                 <p className="font-medium text-gray-900 dark:text-white">Delivery completed</p>
@@ -379,8 +323,8 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center py-3 border-b border-gray-100 dark:border-gray-700">
-              <div className="bg-yellow-300 dark:bg-yellow-100/30 p-2 rounded-full">
-                <FaRoute className="text-yellow-700 dark:text-yellow-300" />
+              <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full">
+                <FaRoute className="text-blue-600 dark:text-blue-400" />
               </div>
               <div className="ml-4">
                 <p className="font-medium text-gray-900 dark:text-white">New route assigned</p>
@@ -390,8 +334,8 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center py-3 border-b border-gray-100 dark:border-gray-700">
-              <div className="bg-yellow-100 dark:bg-yellow-100/30 p-2 rounded-full">
-                <FaClock className="text-yellow-700 dark:text-yellow-300" />
+              <div className="bg-yellow-100 dark:bg-yellow-900/30 p-2 rounded-full">
+                <FaClock className="text-yellow-600 dark:text-yellow-400" />
               </div>
               <div className="ml-4">
                 <p className="font-medium text-gray-900 dark:text-white">Delay reported</p>
@@ -401,8 +345,8 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center py-3 border-b border-gray-100 dark:border-gray-700">
-              <div className="bg-yellow-100 dark:bg-yellow-100/30 p-2 rounded-full">
-                <FaGasPump className="text-yellow-700 dark:text-yellow-300" />
+              <div className="bg-purple-100 dark:bg-purple-900/30 p-2 rounded-full">
+                <FaGasPump className="text-purple-600 dark:text-purple-400" />
               </div>
               <div className="ml-4">
                 <p className="font-medium text-gray-900 dark:text-white">Fuel refill completed</p>
@@ -412,8 +356,8 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center py-3">
-              <div className="bg-yellow-100 dark:bg-yellow-100/30 p-2 rounded-full">
-                <FaExclamationTriangle className="text-yellow-700 dark:text-yellow-300" />
+              <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded-full">
+                <FaExclamationTriangle className="text-red-600 dark:text-red-400" />
               </div>
               <div className="ml-4">
                 <p className="font-medium text-gray-900 dark:text-white">Vehicle issue reported</p>
@@ -427,11 +371,11 @@ export default function DashboardPage() {
 
       {/* Calculator Popup */}
       {showCalculator && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center  z-50 p-4" onClick={e => { if (e.target === e.currentTarget) setShowCalculator(false); }}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={e => { if (e.target === e.currentTarget) setShowCalculator(false); }}>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md">
-            <div className="bg-grey-800 text-black p-4 rounded-t-lg  flex justify-between items-center">
+            <div className="bg-orange-500 text-white p-4 rounded-t-lg flex justify-between items-center">
               <h3 className="font-semibold">Fuel & Cost Calculator</h3>
-              <button className="text-black cursor-pointer text-2xl" onClick={() => setShowCalculator(false)}>&times;</button>
+              <button className="text-white text-2xl" onClick={() => setShowCalculator(false)}>&times;</button>
             </div>
 
             <div className="p-4">
@@ -447,7 +391,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mileage (km/L)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fuel Efficiency (km/L)</label>
                 <input
                   type="number"
                   value={efficiency}
@@ -480,7 +424,7 @@ export default function DashboardPage() {
               </div>
 
               <button
-                className="w-full bg-yellow-300 hover:bg-yellow-500 cursor-pointer text-white py-2 rounded-lg mb-4"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg mb-4"
                 onClick={handleCalculate}
               >
                 Calculate
@@ -504,12 +448,17 @@ export default function DashboardPage() {
 
               <div className="mt-4 flex justify-between">
                 <button
-                  className="bg-gray-300 cursor-pointer dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-white py-2 px-4 rounded-lg"
+                  className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-white py-2 px-4 rounded-lg"
                   onClick={handleClear}
                 >
                   Clear
                 </button>
-                
+                <button
+                  className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center"
+                  onClick={() => setShowCalculator(false)}
+                >
+                  <FaArrowLeft className="mr-2" /> Back to Dashboard
+                </button>
               </div>
             </div>
           </div>
