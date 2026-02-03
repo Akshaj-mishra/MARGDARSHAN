@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { FaInstagram, FaLinkedinIn, FaTwitter } from "react-icons/fa";
-import ToggleMode from "../../component/ToggleMode";  
 
 interface NavbarProps {
   darkMode: boolean;

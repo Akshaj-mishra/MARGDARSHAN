@@ -44,7 +44,7 @@ export default function HeroSection() {
           <motion.a 
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            href="/frontend/dashboard" 
+            href="/frontend/signuppage" 
             className="inline-block px-8 py-3 bg-[#FFBE00] text-white rounded-lg font-medium shadow-lg"
           >
             Start Planning
