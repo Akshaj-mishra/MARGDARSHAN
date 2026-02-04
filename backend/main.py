@@ -16,7 +16,6 @@ if not GOOGLE_API_KEY:
 
 app = FastAPI(title="Backend", version="1.0.0")
 
-# FastAPI expects a list for CORS. Support both localhost and 127.0.0.1 for dev.
 origins = list({
     frontend_source,
     "http://localhost:3000",
@@ -30,14 +29,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include vehicle CRUD routes
 app.include_router(vehicles_router)
 
+@app.get("/")
+def root():
+    """Root endpoint"""
+    return {"message": "MargDarshan root path", "version": "0.6.7"}
 
 class LatLng(BaseModel):
     lat: float
     lng: float
-
 
 class RouteRequest(BaseModel):
     origin: LatLng
