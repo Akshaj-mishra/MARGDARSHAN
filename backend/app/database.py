@@ -52,6 +52,8 @@ class VehicleModel(BaseModel):
     engineCapacity: str
     weight: str
     height: str
+    milage: str
+    noTyres: str
     additionalPayloadWeight: Optional[str] = ""
     additionalPayloadHeight: Optional[str] = ""
 
@@ -66,10 +68,8 @@ async def create_vehicle(vehicle: VehicleModel):
         vehicle_data = vehicle.dict(exclude={"id"})
         vehicle_data["created_at"] = firestore.SERVER_TIMESTAMP
         vehicle_data["updated_at"] = firestore.SERVER_TIMESTAMP
-        
         doc_ref = db.collection("vehicles").document()
         doc_ref.set(vehicle_data)
-        
         logger.info(f"Vehicle created successfully with ID: {doc_ref.id}")
         return {"id": doc_ref.id, **vehicle_data}
     except Exception as e:
@@ -86,6 +86,10 @@ async def get_all_vehicles() -> List[VehicleModel]:
                 continue
             vehicle_data = doc.to_dict()
             vehicle_data["id"] = doc.id
+            if "milage" not in vehicle_data:
+                vehicle_data["milage"] = ""
+            if "noTyres" not in vehicle_data:
+                vehicle_data["noTyres"] = ""
             vehicles.append(vehicle_data)
         logger.info(f"Retrieved {len(vehicles)} vehicles from database")
         return vehicles
@@ -100,6 +104,10 @@ async def get_vehicle(vehicle_id: str):
         if doc.exists:
             vehicle_data = doc.to_dict()
             vehicle_data["id"] = doc.id
+            if "milage" not in vehicle_data:
+                vehicle_data["milage"] = ""
+            if "noTyres" not in vehicle_data:
+                vehicle_data["noTyres"] = ""
             logger.info(f"Vehicle {vehicle_id} retrieved successfully")
             return vehicle_data
         else:
@@ -114,7 +122,6 @@ async def update_vehicle(vehicle_id: str, vehicle: VehicleModel):
     try:
         vehicle_data = vehicle.dict(exclude={"id"})
         vehicle_data["updated_at"] = firestore.SERVER_TIMESTAMP
-        
         db.collection("vehicles").document(vehicle_id).update(vehicle_data)
         logger.info(f"Vehicle {vehicle_id} updated successfully")
         return {"id": vehicle_id, **vehicle_data}
