@@ -2,6 +2,9 @@ import requests
 from dotenv import load_dotenv
 import os
 
+from model.prediction import predict_mileage, MileageFeatures
+from app.database import db
+
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
