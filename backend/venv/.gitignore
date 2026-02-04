@@ -1,7 +1,0 @@
-.env
-.serviceAccountKey.json
-__pycache__/
-*.pyc
-instance
-.env
-venv/
