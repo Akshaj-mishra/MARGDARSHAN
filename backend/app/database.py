@@ -71,7 +71,9 @@ async def create_vehicle(vehicle: VehicleModel):
         doc_ref = db.collection("vehicles").document()
         doc_ref.set(vehicle_data)
         logger.info(f"Vehicle created successfully with ID: {doc_ref.id}")
-        return {"id": doc_ref.id, **vehicle_data}
+        response_data = vehicle.dict(exclude={"id"})
+        response_data["id"] = doc_ref.id
+        return response_data
     except Exception as e:
         logger.error(f"Error creating vehicle: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -124,7 +126,9 @@ async def update_vehicle(vehicle_id: str, vehicle: VehicleModel):
         vehicle_data["updated_at"] = firestore.SERVER_TIMESTAMP
         db.collection("vehicles").document(vehicle_id).update(vehicle_data)
         logger.info(f"Vehicle {vehicle_id} updated successfully")
-        return {"id": vehicle_id, **vehicle_data}
+        response_data = vehicle.dict(exclude={"id"})
+        response_data["id"] = vehicle_id
+        return response_data
     except Exception as e:
         logger.error(f"Error updating vehicle {vehicle_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
