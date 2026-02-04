@@ -12,6 +12,8 @@ interface Vehicle {
   engineCapacity: string;
   weight: string;
   height: string;
+  milage: string;
+  noTyres: string;
   additionalPayloadWeight?: string;
   additionalPayloadHeight?: string;
 }
@@ -30,6 +32,8 @@ const Vehicle_details = () => {
   const [editVehicleId, setEditVehicleId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [milage, setMilage] = useState("");
+  const [noTyres, setNoTyres] = useState("");
 
   const [vehicleProfiles, setVehicleProfiles] = useState<Vehicle[]>([]);
 
@@ -58,6 +62,10 @@ const Vehicle_details = () => {
       setError("Vehicle name is required");
       return;
     }
+    if (!milage.trim()) {
+      setError("Vehicle milage is required");
+      return;
+    }
     if (!vehicleType) {
       setError("Vehicle type is required");
       return;
@@ -65,15 +73,23 @@ const Vehicle_details = () => {
 
     let genWeight = "";
     let genHeight = "";
+    let noTyres = "";
     if (vehicleType === "Two wheeler") {
       genWeight = "150";
       genHeight = "1.1";
+      noTyres = "2";
     } else if (vehicleType === "Three wheeler") {
       genWeight = "350";
       genHeight = "1.7";
+      noTyres = "3";
+    } else if (vehicleType === "Four wheeler") {
+      genWeight = "1200";
+      genHeight = "1.5";
+      noTyres = "4";
     } else if (vehicleType === "Heavy vehicle") {
       genWeight = "36287";
       genHeight = "4.1";
+      noTyres = "6";
     }
 
     const vehicleData: Vehicle = {
@@ -82,6 +98,8 @@ const Vehicle_details = () => {
       engineCapacity: capacity,
       weight: genWeight,
       height: genHeight,
+      milage,
+      noTyres,
       additionalPayloadWeight: payload_weight,
       additionalPayloadHeight: payload_height,
     };
@@ -118,6 +136,8 @@ const Vehicle_details = () => {
       engineCapacity: capacity,
       weight,
       height,
+      milage,
+      noTyres,
       additionalPayloadWeight: payload_weight,
       additionalPayloadHeight: payload_height,
     };
@@ -173,6 +193,8 @@ const Vehicle_details = () => {
     setWeight("");
     setHeight("");
     setVehicleType("");
+    setMilage("");
+    setNoTyres("");
   };
 
   return (
@@ -181,10 +203,6 @@ const Vehicle_details = () => {
         <h1 className="text-xl font-bold">MarkDarshan</h1>
         <p className="text-gray-400 text-sm">Vehicle details page</p>
       </div>
-
-      {error && (
-        <div className="bg-red-500 text-white p-3 m-4 rounded-lg">{error}</div>
-      )}
 
       <div className="p-4 space-y-4">
         <div className="bg-white rounded-2xl shadow-lg p-4">
@@ -212,9 +230,20 @@ const Vehicle_details = () => {
               />
             </div>
 
+            <div className="relative">
+              <h3 className="mb-2 text-black font-medium">Vehicle Milage</h3>
+              <input
+                type="text"
+                placeholder="Engine Capacity"
+                value={milage}
+                onChange={(e) => setMilage(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-gray-50 text-black placeholder-gray-500"
+              />
+            </div>
+
             <h3 className="mb-2 text-black font-medium">Vehicle Type</h3>
-            <div className="grid grid-cols-3 gap-3">
-              <label className="flex items-center space-x-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              <label className="flex items-center space-x-3 p-2 rounded-xl border border-gray-200 bg-gray-50">
                 <input
                   type="radio"
                   name="vehicleType"
@@ -224,7 +253,7 @@ const Vehicle_details = () => {
                 />
                 <span className="text-sm text-black">Two wheeler</span>
               </label>
-              <label className="flex items-center space-x-3">
+              <label className="flex items-center space-x-3 p-2 rounded-xl border border-gray-200 bg-gray-50">
                 <input
                   type="radio"
                   name="vehicleType"
@@ -234,7 +263,17 @@ const Vehicle_details = () => {
                 />
                 <span className="text-sm text-black">Three Wheeler</span>
               </label>
-              <label className="flex items-center space-x-3">
+              <label className="flex items-center space-x-3 p-2 rounded-xl border border-gray-200 bg-gray-50">
+                <input
+                  type="radio"
+                  name="vehicleType"
+                  checked={vehicleType === "Four wheeler"}
+                  onChange={() => setVehicleType("Four wheeler")}
+                  className="rounded text-yellow-500 focus:ring-yellow-400"
+                />
+                <span className="text-sm text-black">Four wheeler</span>
+              </label>
+              <label className="flex items-center space-x-3 p-2 rounded-xl border border-gray-200 bg-gray-50">
                 <input
                   type="radio"
                   name="vehicleType"
@@ -299,7 +338,12 @@ const Vehicle_details = () => {
           </div>
         </div>
         <div className="bg-white rounded-2xl shadow-lg p-4">
-          <div className="flex items-center justify-between mb-4">
+          {error && (
+            <div className="bg-red-500 text-white p-3 m-4 rounded-lg width-1/2 mb-6">
+              {error}
+            </div>
+          )}
+          <div className="flex items-center justify-between mb-4 ">
             <h3 className="text-lg font-semibold text-black">
               Vehicle Profile
             </h3>
@@ -317,6 +361,8 @@ const Vehicle_details = () => {
                     setHeight(v.height.replace(/[^0-9.]/g, ""));
                     setWeight(v.weight.replace(/[^0-9.]/g, ""));
                     setCapacity(v.engineCapacity.replace(/[^0-9.]/g, ""));
+                    setMilage((v.milage || "").replace(/[^0-9.]/g, ""));
+                    setNoTyres((v.noTyres || "").replace(/[^0-9]/g, ""));
                     setPayloadWeight(
                       (v.additionalPayloadWeight || "").replace(/[^0-9.]/g, ""),
                     );
@@ -358,8 +404,10 @@ const Vehicle_details = () => {
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 mt-1">
-                      {vehicle.height} • {vehicle.weight} •{" "}
-                      {vehicle.engineCapacity}
+                      {vehicle.vehicleType} • {vehicle.height} •{" "}
+                      {vehicle.weight} • {vehicle.engineCapacity} •{" "}
+                      {vehicle.milage || "N/A"} km/l •{" "}
+                      {vehicle.noTyres || "N/A"} tyres
                       {vehicle.additionalPayloadWeight &&
                         ` • ${vehicle.additionalPayloadWeight}`}
                       {vehicle.additionalPayloadHeight &&
@@ -398,7 +446,7 @@ const Vehicle_details = () => {
 
           {isEditing && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-              <div className="bg-white rounded-2xl shadow-lg p-6 w-96 max-h-screen overflow-y-auto">
+              <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-2xl mx-4 max-h-screen overflow-y-auto">
                 <h3 className="text-lg font-semibold text-black mb-4">
                   Edit Vehicle
                 </h3>
@@ -426,6 +474,7 @@ const Vehicle_details = () => {
                       <option value="">Select Type</option>
                       <option value="Two wheeler">Two wheeler</option>
                       <option value="Three wheeler">Three wheeler</option>
+                      <option value="Four wheeler">Four wheeler</option>
                       <option value="Heavy vehicle">Heavy vehicle</option>
                     </select>
                   </div>
@@ -459,6 +508,28 @@ const Vehicle_details = () => {
                       type="text"
                       value={capacity}
                       onChange={(e) => setCapacity(e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-black"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-black font-medium mb-1">
+                      Vehicle Milage (in km/l)
+                    </label>
+                    <input
+                      type="text"
+                      value={milage}
+                      onChange={(e) => setMilage(e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-black"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-black font-medium mb-1">
+                      Number of Tyres
+                    </label>
+                    <input
+                      type="text"
+                      value={noTyres}
+                      onChange={(e) => setNoTyres(e.target.value)}
                       className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-black"
                     />
                   </div>
