@@ -50,6 +50,7 @@ class VehicleModel(BaseModel):
     name: str
     vehicleType: str
     engineCapacity: str
+    fuelCapacity: str
     weight: str
     height: str
     milage: str

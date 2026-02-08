@@ -3,12 +3,10 @@ import numpy as np
 import xgboost as xgb
 from pydantic import BaseModel, Field
 
-
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "model.json")
 
 model = xgb.Booster()
 model.load_model(MODEL_PATH)
-
 
 class MileageFeatures(BaseModel):
     distance_km: float = Field(..., gt=0)
@@ -28,8 +26,14 @@ FEATURE_ORDER = [
 ]
 
 def predict_mileage(features: MileageFeatures) -> float:
-    X = np.array([[getattr(features, f) for f in FEATURE_ORDER]])
-    dmatrix = xgb.DMatrix(X)
+
+    values = [getattr(features, f) for f in FEATURE_ORDER]
+    
+
+    X = np.array([values])
+    
+    
+    dmatrix = xgb.DMatrix(X, feature_names=FEATURE_ORDER)
 
     prediction = model.predict(dmatrix)
     return float(prediction[0])

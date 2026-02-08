@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from app.database import router as vehicles_router
-
+from app.mapsbackend import route_optimization
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 frontend_source = os.getenv("FASTAPI_FRONTEND_SOURCE_LINK") or "http://localhost:3000"
@@ -43,6 +43,7 @@ class LatLng(BaseModel):
 class RouteRequest(BaseModel):
     origin: LatLng
     destination: LatLng
+    vehicle_id: str
     waypoints: Optional[List[LatLng]] = []
     optimize: bool = True
     travelMode: str = "driving"  
@@ -74,9 +75,19 @@ def geocode(query: str = Query(..., min_length=1)):
 
 @app.post("/route")
 def get_route(req: RouteRequest):
-    """Compute directions with optional waypoint optimization using Google Directions API."""
-    url = "https://maps.googleapis.com/maps/api/directions/json"
+    """Compute directions with optional waypoint optimization and ML fuel/break planning."""
+    optimization_results = route_optimization(
+        origin_latlng=req.origin, 
+        destination_latlng=req.destination, 
+        vehicle_id=req.vehicle_id
+    )
+    
+    if "error" in optimization_results:
+        raise HTTPException(status_code=400, detail=optimization_results["error"])
 
+    # 2. Standard Google Directions Logic
+    url = "https://maps.googleapis.com/maps/api/directions/json"
+    
     waypoints_param = None
     if req.waypoints and len(req.waypoints) > 0:
         wp_list = [f"{w.lat},{w.lng}" for w in req.waypoints]
@@ -93,31 +104,24 @@ def get_route(req: RouteRequest):
         "units": "metric" if req.unitSystem == "metric" else "imperial",
     }
 
-
     avoids = []
-    if req.avoidHighways:
-        avoids.append("highways")
-    if req.avoidTolls:
-        avoids.append("tolls")
-    if avoids:
-        params["avoid"] = "|".join(avoids)
-
-    if waypoints_param:
-        params["waypoints"] = waypoints_param
+    if req.avoidHighways: avoids.append("highways")
+    if req.avoidTolls: avoids.append("tolls")
+    if avoids: params["avoid"] = "|".join(avoids)
+    if waypoints_param: params["waypoints"] = waypoints_param
 
     r = requests.get(url, params=params, timeout=30)
     if r.status_code != 200:
         raise HTTPException(status_code=502, detail="Directions API error")
+    
     data = r.json()
-    status = data.get("status")
-    if status != "OK":
-        raise HTTPException(status_code=400, detail=f"Directions failed: {status}")
+    if data.get("status") != "OK":
+        raise HTTPException(status_code=400, detail=f"Directions failed: {data.get('status')}")
 
     route = data["routes"][0]
     legs = route.get("legs", [])
     total_distance_m = sum(l["distance"]["value"] for l in legs)
     total_duration_s = sum(l["duration"]["value"] for l in legs)
-
     overview = route.get("overview_polyline", {}).get("points")
     waypoint_order = route.get("waypoint_order", []) if req.optimize else list(range(len(req.waypoints or [])))
     bounds = route.get("bounds")
@@ -130,7 +134,10 @@ def get_route(req: RouteRequest):
         "polyline": overview,
         "waypoint_order": waypoint_order,
         "bounds": bounds,
-        "raw": {"legs": legs},
+        "raw": {
+            "legs": legs,
+            "optimization": optimization_results  
+        },
     }
 
 
