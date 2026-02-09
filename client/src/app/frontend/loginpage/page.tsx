@@ -56,7 +56,6 @@ export default function LoginPage() {
               type={showPassword ? 'text' : 'password'}
               placeholder="Password"
               name="password"
-              pattern="\d{8}"
               minLength={8}
               maxLength={15}
               title="Password must be exactly 8 digits"

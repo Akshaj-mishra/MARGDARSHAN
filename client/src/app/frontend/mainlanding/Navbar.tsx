@@ -55,6 +55,22 @@ export default function Navbar({ darkMode, toggleDarkMode }: NavbarProps) {
                   About
                 </a>
               </motion.li>
+              <motion.li whileHover={{ scale: 1.05 }}>
+                <a
+                  href="#home"
+                  className="text-gray-900 dark:text-white hover:underline"
+                >
+                  Route
+                </a>
+              </motion.li>
+              <motion.li whileHover={{ scale: 1.05 }}>
+                <a
+                  href="#home"
+                  className="text-gray-900 dark:text-white hover:underline"
+                >
+                  
+                </a>
+              </motion.li>
             </ul>
           </div>
           <div className="flex items-center space-x-4">
