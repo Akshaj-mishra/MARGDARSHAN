@@ -397,6 +397,7 @@ function RouteOptimizerComponent() {
       const body = {
         origin: toPlain(origin),
         destination: toPlain(destination),
+        vehicle_id: selectedVehicle?.id || "default",
         waypoints: waypoints.map((wp: any) => toPlain(wp.location)),
         optimize: true,
         travelMode: "driving",
@@ -428,6 +429,45 @@ function RouteOptimizerComponent() {
       polyline.setMap(map);
       setRoutePolyline(polyline);
 
+      // Add optimized fuel/break stops to the map
+      if (data.raw?.optimization?.optimized_stops) {
+        data.raw.optimization.optimized_stops.forEach((stop: any) => {
+          const isFuel = stop.type === "fuel";
+          const stopMarker = new gmaps.Marker({
+            position: { lat: stop.place.lat, lng: stop.place.lng },
+            map: map,
+            title: `${stop.type.toUpperCase()}: ${stop.place.name}`,
+            icon: {
+              url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="10" fill="${isFuel ? '#ef4444' : '#10b981'}" stroke="white" stroke-width="2"/>
+                  <path d="${isFuel ? 'M12 6v6l4 2' : 'M8 8h8v8H8z'}" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              `)}`,
+              scaledSize: new gmaps.Size(32, 32),
+              anchor: new gmaps.Point(16, 16),
+            },
+          });
+
+          const infoWindow = new gmaps.InfoWindow({
+            content: `
+              <div style="color: black; padding: 5px;">
+                <strong>${isFuel ? "⛽ Fuel Station" : "🍴 Break Stop"}</strong><br/>
+                ${stop.place.name}<br/>
+                Rating: ${stop.place.rating || "N/A"} ⭐<br/>
+                ${isFuel ? `At km: ${stop.at_km}` : `At hours: ${stop.at_hours}`}
+              </div>
+            `,
+          });
+
+          stopMarker.addListener("click", () => {
+            infoWindow.open(map, stopMarker);
+          });
+
+          markersRef.current.push(stopMarker);
+        });
+      }
+
       if (map && path.length) {
         if (data.bounds?.northeast && data.bounds?.southwest) {
           const bounds = new gmaps.LatLngBounds(
@@ -451,7 +491,7 @@ function RouteOptimizerComponent() {
       setTotalDistance(data.distance_text || "");
       setTotalDuration(data.duration_text || "");
     } catch (error: any) {
-      alert("Could not calculate route: " + error?.message || error);
+      alert("Could not calculate route: " + (error?.message || error));
     }
     setIsLoading(false);
   };
@@ -1149,6 +1189,27 @@ function RouteOptimizerComponent() {
                 <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                 <p className="text-gray-900 font-medium">Optimizing route...</p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Legend for optimized stops */}
+        {(totalDistance || totalDuration) && (
+          <div className="absolute bottom-6 left-6 z-40 flex flex-col gap-2 p-3 rounded-lg shadow-md bg-white/90 backdrop-blur-sm border border-gray-200">
+            <div className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">Route Info</div>
+            <div className="flex items-center gap-2 text-sm text-gray-800">
+              <span className="font-semibold">{totalDistance}</span>
+              <span className="text-gray-400">•</span>
+              <span className="font-semibold">{totalDuration}</span>
+            </div>
+            <hr className="my-1 border-gray-200" />
+            <div className="flex items-center gap-2 text-xs text-gray-600">
+              <span className="w-3 h-3 rounded-full bg-[#ef4444] border border-white"></span>
+              <span>Fuel Station</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-600">
+              <span className="w-3 h-3 rounded-full bg-[#10b981] border border-white"></span>
+              <span>Break Stop</span>
             </div>
           </div>
         )}
