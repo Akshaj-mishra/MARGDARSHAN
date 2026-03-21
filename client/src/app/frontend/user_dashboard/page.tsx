@@ -71,6 +71,18 @@ export default function DashboardPage() {
       fuelCost: fuelCost ? `₹${fuelCost.toFixed(2)}` : '-',
       totalCost: totalCost ? `₹${totalCost.toFixed(2)}` : '-',
     });
+
+    // Update the Dashboard Insights dynamically
+    if (d > 0) {
+      setInsights(prev => ({
+        ...prev,
+        distance: prev.distance + d,
+        fuel: prev.fuel + fuelNeeded,
+        spent: prev.spent + totalCost,
+        // Assume an eco-route saves ~10% CO2 compared to standard
+        co2Saved: prev.co2Saved + (fuelNeeded * 0.23) 
+      }));
+    }
   };
 
   const handleClear = () => {
@@ -80,6 +92,15 @@ export default function DashboardPage() {
     setOtherCosts('');
     setResults({ fuelNeeded: '-', fuelCost: '-', totalCost: '-' });
   };
+  // Dynamic Insights State
+  const [insights, setInsights] = useState({
+    distance: 1240,
+    fuel: 310,
+    spent: 24800,
+    co2Saved: 12.5,
+    score: 85
+  });
+  
 
   const emergencyContacts = [
     { label: 'Police', number: '100' },
@@ -312,6 +333,102 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+        </div>
+        {/* Trip Insights & Smart Recommendations */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+          
+          {/* Trip Insights Section */}
+          <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+              <FaRoute className="text-yellow-500" /> Trip Insights (Weekly)
+            </h3>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+  {/* Distance Card */}
+  <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
+    <p className="text-xs text-gray-500 uppercase font-semibold">Distance</p>
+    <p className="text-xl font-bold dark:text-white transition-all">
+      {insights.distance.toLocaleString()} <span className="text-sm font-normal">km</span>
+    </p>
+  </div>
+
+  {/* NEW: Total Fuel Used Card */}
+  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center border border-green-100 dark:border-green-800">
+    <p className="text-xs text-green-600 dark:text-green-400 uppercase font-bold flex items-center justify-center gap-1">
+      <FaGasPump className="text-[10px]" /> Total Fuel
+    </p>
+    <p className="text-xl font-bold text-green-700 dark:text-green-300">
+      {insights.fuel.toFixed(1)} <span className="text-sm font-normal">L</span>
+    </p>
+    {/* Small visual indicator of fuel usage */}
+    <div className="w-full bg-gray-200 dark:bg-gray-600 h-1 mt-2 rounded-full overflow-hidden">
+      <div 
+        className="bg-green-500 h-full transition-all duration-500" 
+        style={{ width: `${Math.min((insights.fuel / 500) * 100, 100)}%` }}
+      ></div>
+    </div>
+  </div>
+
+  {/* Total Spent Card */}
+  <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
+    <p className="text-xs text-gray-500 uppercase font-semibold">Total Spent</p>
+    <p className="text-xl font-bold text-yellow-600">
+      ₹{insights.spent.toLocaleString()}
+    </p>
+  </div>
+
+  {/* CO2 Saved Card */}
+  <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
+    <p className="text-xs text-gray-500 uppercase font-semibold">CO₂ Saved</p>
+    <p className="text-xl font-bold text-blue-500">
+      {insights.co2Saved.toFixed(1)} <span className="text-sm font-normal">kg</span>
+    </p>
+  </div>
+</div>
+
+            {/* Driving Score Placeholder */}
+            <div className="mt-6 p-4 border-t dark:border-gray-700 flex items-center justify-between">
+              <div>
+                <p className="text-lg font-semibold dark:text-white">Personal Driving Score</p>
+                <p className="text-sm text-gray-500">Based on braking, speed, and idling</p>
+              </div>
+              <div className="relative w-16 h-16 flex items-center justify-center">
+                 <svg className="w-full h-full transform -rotate-90">
+                    <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-gray-200 dark:text-gray-700" />
+                    <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray={175} strokeDashoffset={175 - (175 * 85) / 100} className="text-green-500" />
+                 </svg>
+                 <span className="absolute text-sm font-bold dark:text-white">85</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Smart Recommendations Section */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-yellow-500">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              ✨ Smart Insights
+            </h3>
+            <div className="space-y-4">
+              <div className="flex gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-900/30">
+                <span className="text-green-600">💰</span>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Save <strong>₹120/week</strong> by switching to recommended eco-routes.
+                </p>
+              </div>
+              <div className="flex gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-100 dark:border-yellow-900/30">
+                <span className="text-yellow-600">⛽</span>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Refuel earlier—prices are <strong>5% higher</strong> near your destination.
+                </p>
+              </div>
+              <div className="flex gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-900/30">
+                <span className="text-red-600">⚠️</span>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Pattern Alert: Frequent hard braking detected in urban zones.
+                </p>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         {/* Fuel Calculator Modal */}
