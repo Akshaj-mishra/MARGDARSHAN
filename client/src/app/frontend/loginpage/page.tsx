@@ -18,7 +18,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/frontend/mainlanding');
+      router.push('/frontend/user_dashboard');
     } catch (err: any) {
       setError(err.message);
     }
