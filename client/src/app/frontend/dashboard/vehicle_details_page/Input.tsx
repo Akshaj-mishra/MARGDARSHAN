@@ -198,391 +198,377 @@ const Vehicle_details = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black pb-20">
-      <div className="bg-black text-white p-4 pt-8 border-b border-gray-800">
-        <h1 className="text-xl font-bold">MarkDarshan</h1>
-        <p className="text-gray-400 text-sm">Vehicle details page</p>
-      </div>
-
-      <div className="p-4 space-y-4">
-        <div className="bg-white rounded-2xl shadow-lg p-4">
-          <h2 className="text-lg font-semibold mb-4 text-black">Add vehicle</h2>
-          <div className="space-y-3">
-            <div className="relative">
-              <h3 className="mb-2 text-black font-medium">Vehicle name</h3>
-              <input
-                type="text"
-                placeholder="Vehicle name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-gray-50 text-black placeholder-gray-500"
-              />
+    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-neutral-900 to-zinc-950 px-3 py-5 sm:px-6 sm:py-8 lg:px-10">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-4 rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl sm:mb-6 sm:p-6">
+          <div className="flex items-start justify-between gap-3 sm:gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-yellow-400/90">
+                Fleet Management
+              </p>
+              <h1 className="mt-2 text-2xl font-semibold text-white sm:text-4xl">
+                Vehicle Details
+              </h1>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-300 sm:text-base">
+                Add and manage your vehicle profiles.
+              </p>
             </div>
-
-            <div className="relative">
-              <h3 className="mb-2 text-black font-medium">Engine Capacity</h3>
-              <input
-                type="text"
-                placeholder="Engine Capacity"
-                value={capacity}
-                onChange={(e) => setCapacity(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-gray-50 text-black placeholder-gray-500"
-              />
+            <div className="hidden rounded-2xl bg-yellow-400/10 p-3 sm:block">
+              <Truck className="h-7 w-7 text-yellow-300" />
             </div>
+          </div>
+        </div>
 
-            <div className="relative">
-              <h3 className="mb-2 text-black font-medium">Vehicle Milage</h3>
-              <input
-                type="text"
-                placeholder="Engine Capacity"
-                value={milage}
-                onChange={(e) => setMilage(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-gray-50 text-black placeholder-gray-500"
-              />
-            </div>
+        {error && (
+          <div className="mb-4 rounded-2xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-200 sm:mb-5">
+            {error}
+          </div>
+        )}
 
-            <h3 className="mb-2 text-black font-medium">Vehicle Type</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-              <label className="flex items-center space-x-3 p-2 rounded-xl border border-gray-200 bg-gray-50">
-                <input
-                  type="radio"
-                  name="vehicleType"
-                  checked={vehicleType === "Two wheeler"}
-                  onChange={() => setVehicleType("Two wheeler")}
-                  className="rounded text-yellow-500 focus:ring-yellow-400"
-                />
-                <span className="text-sm text-black">Two wheeler</span>
-              </label>
-              <label className="flex items-center space-x-3 p-2 rounded-xl border border-gray-200 bg-gray-50">
-                <input
-                  type="radio"
-                  name="vehicleType"
-                  checked={vehicleType === "Three wheeler"}
-                  onChange={() => setVehicleType("Three wheeler")}
-                  className="rounded text-yellow-500 focus:ring-yellow-400"
-                />
-                <span className="text-sm text-black">Three Wheeler</span>
-              </label>
-              <label className="flex items-center space-x-3 p-2 rounded-xl border border-gray-200 bg-gray-50">
-                <input
-                  type="radio"
-                  name="vehicleType"
-                  checked={vehicleType === "Four wheeler"}
-                  onChange={() => setVehicleType("Four wheeler")}
-                  className="rounded text-yellow-500 focus:ring-yellow-400"
-                />
-                <span className="text-sm text-black">Four wheeler</span>
-              </label>
-              <label className="flex items-center space-x-3 p-2 rounded-xl border border-gray-200 bg-gray-50">
-                <input
-                  type="radio"
-                  name="vehicleType"
-                  checked={vehicleType === "Heavy vehicle"}
-                  onChange={() => setVehicleType("Heavy vehicle")}
-                  className="rounded text-yellow-500 focus:ring-yellow-400"
-                />
-                <span className="text-sm text-black">
-                  Heavy vehicle (Trucks or buses)
-                </span>
-              </label>
-            </div>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+          <section className="rounded-3xl border border-white/10 bg-white p-4 shadow-2xl shadow-black/20 sm:p-8">
+            <h2 className="text-xl font-semibold text-zinc-900 sm:text-2xl">Add Vehicle</h2>
+            <p className="mt-1 text-sm text-zinc-500">Fill in basic and optional information.</p>
 
-            <button
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="flex items-center text-black text-sm font-medium hover:text-gray-700 transition-colors"
-            >
-              Advance Options
-              {showAdvanced ? (
-                <ChevronUp className="w-4 h-4 ml-1" />
-              ) : (
-                <ChevronDown className="w-4 h-4 ml-1" />
+            <div className="mt-6 space-y-5">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-zinc-700">Vehicle Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g., MH12 AB 4567"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-yellow-500 focus:bg-white focus:ring-4 focus:ring-yellow-200"
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-zinc-700">Engine Capacity</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., 1500 cc"
+                    value={capacity}
+                    onChange={(e) => setCapacity(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-yellow-500 focus:bg-white focus:ring-4 focus:ring-yellow-200"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-zinc-700">Vehicle Mileage</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., 12 km/l"
+                    value={milage}
+                    onChange={(e) => setMilage(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-yellow-500 focus:bg-white focus:ring-4 focus:ring-yellow-200"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-zinc-700">Vehicle Type</label>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {["Two wheeler", "Three wheeler", "Four wheeler", "Heavy vehicle"].map((type) => (
+                    <label
+                      key={type}
+                      className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border px-3 py-3 text-sm transition ${
+                        vehicleType === type
+                          ? "border-yellow-400 bg-yellow-50 text-zinc-900"
+                          : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-zinc-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="vehicleType"
+                        checked={vehicleType === type}
+                        onChange={() => setVehicleType(type)}
+                        className="h-4 w-4 text-yellow-500 focus:ring-yellow-400"
+                      />
+                      {type === "Heavy vehicle" ? "Heavy vehicle (Trucks or buses)" : type}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-950"
+              >
+                {showAdvanced ? "Hide Advanced Options" : "Show Advanced Options"}
+                {showAdvanced ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+
+              {showAdvanced && (
+                <div className="grid gap-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-zinc-700">Additional Payload Weight</label>
+                    <input
+                      type="text"
+                      placeholder="e.g., 250 kg"
+                      value={payload_weight}
+                      onChange={(e) => setPayloadWeight(e.target.value)}
+                      className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-yellow-500 focus:ring-4 focus:ring-yellow-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-zinc-700">Additional Payload Height</label>
+                    <input
+                      type="text"
+                      placeholder="e.g., 0.4 m"
+                      value={payload_height}
+                      onChange={(e) => setPayloadHeight(e.target.value)}
+                      className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-yellow-500 focus:ring-4 focus:ring-yellow-200"
+                    />
+                  </div>
+                </div>
               )}
-            </button>
 
-            {showAdvanced && (
-              <div className="space-y-3 pt-2 border-t border-gray-200">
-                <div className="relative">
-                  <h3 className="mb-2 text-black font-medium">
-                    Additional Payload weight
-                  </h3>
-                  <input
-                    type="text"
-                    placeholder="Additional Payload weight"
-                    value={payload_weight}
-                    onChange={(e) => setPayloadWeight(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-gray-50 text-black placeholder-gray-500"
-                  />
-                </div>
-                <div className="relative">
-                  <h3 className="mb-2 text-black font-medium">
-                    Additional payload height
-                  </h3>
-                  <input
-                    type="text"
-                    placeholder="Additional payload height"
-                    value={payload_height}
-                    onChange={(e) => setPayloadHeight(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-gray-50 text-black placeholder-gray-500"
-                  />
-                </div>
+              <button
+                className="w-full min-h-12 rounded-xl bg-zinc-900 px-4 py-3 text-base font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={saveVehicle}
+                disabled={isLoading}
+              >
+                {isLoading ? "Saving..." : "Save Vehicle"}
+              </button>
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-white/10 bg-white p-4 shadow-2xl shadow-black/20 sm:p-8">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-xl font-semibold text-zinc-900 sm:text-2xl">Vehicle Profiles</h3>
+                <p className="mt-1 text-sm text-zinc-500">Select a profile to edit or delete.</p>
+              </div>
+              <button
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                onClick={() => {
+                  if (selectedVehicle !== null) {
+                    setIsEditing(true);
+                    setEditVehicleId(selectedVehicle);
+                    const v = vehicleProfiles.find(
+                      (veh) => veh.id === selectedVehicle,
+                    );
+                    if (v) {
+                      setName(v.name);
+                      setHeight(v.height.replace(/[^0-9.]/g, ""));
+                      setWeight(v.weight.replace(/[^0-9.]/g, ""));
+                      setCapacity(v.engineCapacity.replace(/[^0-9.]/g, ""));
+                      setMilage((v.milage || "").replace(/[^0-9.]/g, ""));
+                      setNoTyres((v.noTyres || "").replace(/[^0-9]/g, ""));
+                      setPayloadWeight(
+                        (v.additionalPayloadWeight || "").replace(/[^0-9.]/g, ""),
+                      );
+                      setPayloadHeight(
+                        (v.additionalPayloadHeight || "").replace(/[^0-9.]/g, ""),
+                      );
+                      setVehicleType(v.vehicleType);
+                    }
+                  }
+                }}
+                disabled={selectedVehicle === null || isLoading}
+              >
+                <Plus className="mr-1 h-4 w-4" />
+                Edit Selected
+              </button>
+            </div>
+
+            {isLoading && vehicleProfiles.length === 0 && (
+              <p className="rounded-xl bg-zinc-100 px-3 py-2 text-sm text-zinc-500">Loading vehicles...</p>
+            )}
+
+            {!isLoading && vehicleProfiles.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center">
+                <p className="text-sm text-zinc-500">No vehicles yet. Add your first vehicle profile.</p>
               </div>
             )}
 
-            <button
-              className="w-full bg-yellow-500 text-white py-3 rounded-xl font-semibold hover:bg-yellow-600 transition-colors disabled:opacity-50"
-              onClick={saveVehicle}
-              disabled={isLoading}
-            >
-              {isLoading ? "Saving..." : "Save Vehicle"}
-            </button>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl shadow-lg p-4">
-          {error && (
-            <div className="bg-red-500 text-white p-3 m-4 rounded-lg width-1/2 mb-6">
-              {error}
-            </div>
-          )}
-          <div className="flex items-center justify-between mb-4 ">
-            <h3 className="text-lg font-semibold text-black">
-              Vehicle Profile
-            </h3>
-            <button
-              className="text-yellow-600 text-sm font-medium hover:text-yellow-700 transition-colors disabled:opacity-50"
-              onClick={() => {
-                if (selectedVehicle !== null) {
-                  setIsEditing(true);
-                  setEditVehicleId(selectedVehicle);
-                  const v = vehicleProfiles.find(
-                    (veh) => veh.id === selectedVehicle,
-                  );
-                  if (v) {
-                    setName(v.name);
-                    setHeight(v.height.replace(/[^0-9.]/g, ""));
-                    setWeight(v.weight.replace(/[^0-9.]/g, ""));
-                    setCapacity(v.engineCapacity.replace(/[^0-9.]/g, ""));
-                    setMilage((v.milage || "").replace(/[^0-9.]/g, ""));
-                    setNoTyres((v.noTyres || "").replace(/[^0-9]/g, ""));
-                    setPayloadWeight(
-                      (v.additionalPayloadWeight || "").replace(/[^0-9.]/g, ""),
-                    );
-                    setPayloadHeight(
-                      (v.additionalPayloadHeight || "").replace(/[^0-9.]/g, ""),
-                    );
-                    setVehicleType(v.vehicleType);
-                  }
-                }
-              }}
-              disabled={selectedVehicle === null || isLoading}
-            >
-              <Plus className="w-4 h-4 inline mr-1" />
-              Edit Vehicle details
-            </button>
-          </div>
-
-          {isLoading && vehicleProfiles.length === 0 && (
-            <p className="text-gray-500">Loading vehicles...</p>
-          )}
-
-          <div className="space-y-2">
-            {vehicleProfiles.map((vehicle) => (
-              <button
-                key={vehicle.id}
-                onClick={() => setSelectedVehicle(vehicle.id || null)}
-                className={`w-full p-3 rounded-xl border text-left transition-colors ${
-                  selectedVehicle === vehicle.id
-                    ? "border-yellow-400 bg-yellow-50"
-                    : "border-gray-200 hover:border-gray-300 bg-gray-50"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center">
-                      <Truck className="w-4 h-4 mr-2 text-gray-600" />
-                      <span className="font-medium text-black">
-                        {vehicle.name}
-                      </span>
+            <div className="space-y-3">
+              {vehicleProfiles.map((vehicle) => (
+                <div
+                  key={vehicle.id}
+                  onClick={() => setSelectedVehicle(vehicle.id || null)}
+                  className={`w-full rounded-2xl border p-4 text-left transition ${
+                    selectedVehicle === vehicle.id
+                      ? "border-yellow-400 bg-yellow-50"
+                      : "border-zinc-200 bg-zinc-50 hover:border-zinc-300"
+                  }`}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelectedVehicle(vehicle.id || null);
+                    }
+                  }}
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Truck className="h-4 w-4 text-zinc-600" />
+                        <span className="font-semibold text-zinc-900">{vehicle.name}</span>
+                      </div>
+                      <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                        {vehicle.vehicleType} • {vehicle.height} • {vehicle.weight} • {vehicle.engineCapacity} • {vehicle.milage || "N/A"} km/l • {vehicle.noTyres || "N/A"} tyres
+                        {vehicle.additionalPayloadWeight && ` • ${vehicle.additionalPayloadWeight}`}
+                        {vehicle.additionalPayloadHeight && ` • ${vehicle.additionalPayloadHeight}`}
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {vehicle.vehicleType} • {vehicle.height} •{" "}
-                      {vehicle.weight} • {vehicle.engineCapacity} •{" "}
-                      {vehicle.milage || "N/A"} km/l •{" "}
-                      {vehicle.noTyres || "N/A"} tyres
-                      {vehicle.additionalPayloadWeight &&
-                        ` • ${vehicle.additionalPayloadWeight}`}
-                      {vehicle.additionalPayloadHeight &&
-                        ` • ${vehicle.additionalPayloadHeight}`}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {selectedVehicle === vehicle.id && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteVehicle(vehicle.id || "");
-                        }}
-                        className="text-red-500 hover:text-red-700 text-sm font-medium"
-                        disabled={isLoading}
-                      >
-                        Delete
-                      </button>
-                    )}
-                    <div
-                      className={`w-4 h-4 rounded-full border-2 ${
-                        selectedVehicle === vehicle.id
-                          ? "border-yellow-500 bg-yellow-500"
-                          : "border-gray-300"
-                      }`}
-                    >
+
+                    <div className="flex items-center justify-between gap-3 sm:justify-end">
                       {selectedVehicle === vehicle.id && (
-                        <div className="w-full h-full rounded-full bg-white scale-50"></div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteVehicle(vehicle.id || "");
+                          }}
+                          className="min-h-10 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-100"
+                          disabled={isLoading}
+                        >
+                          Delete
+                        </button>
                       )}
+                      <div
+                        className={`h-4 w-4 rounded-full border-2 ${
+                          selectedVehicle === vehicle.id
+                            ? "border-yellow-500 bg-yellow-500"
+                            : "border-zinc-300"
+                        }`}
+                      >
+                        {selectedVehicle === vehicle.id && (
+                          <div className="h-full w-full scale-50 rounded-full bg-white"></div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </button>
-            ))}
-          </div>
+              ))}
+            </div>
+          </section>
+        </div>
 
-          {isEditing && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-              <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-2xl mx-4 max-h-screen overflow-y-auto">
-                <h3 className="text-lg font-semibold text-black mb-4">
-                  Edit Vehicle
-                </h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-black font-medium mb-1">
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-black"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-black font-medium mb-1">
-                      Vehicle Type
-                    </label>
-                    <select
-                      value={vehicleType}
-                      onChange={(e) => setVehicleType(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-black"
-                    >
-                      <option value="">Select Type</option>
-                      <option value="Two wheeler">Two wheeler</option>
-                      <option value="Three wheeler">Three wheeler</option>
-                      <option value="Four wheeler">Four wheeler</option>
-                      <option value="Heavy vehicle">Heavy vehicle</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-black font-medium mb-1">
-                      Height (in meters)
-                    </label>
-                    <input
-                      type="text"
-                      value={height}
-                      onChange={(e) => setHeight(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-black"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-black font-medium mb-1">
-                      Weight (in kgs)
-                    </label>
-                    <input
-                      type="text"
-                      value={weight}
-                      onChange={(e) => setWeight(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-black"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-black font-medium mb-1">
-                      Engine Capacity (in cc)
-                    </label>
-                    <input
-                      type="text"
-                      value={capacity}
-                      onChange={(e) => setCapacity(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-black"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-black font-medium mb-1">
-                      Vehicle Milage (in km/l)
-                    </label>
-                    <input
-                      type="text"
-                      value={milage}
-                      onChange={(e) => setMilage(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-black"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-black font-medium mb-1">
-                      Number of Tyres
-                    </label>
-                    <input
-                      type="text"
-                      value={noTyres}
-                      onChange={(e) => setNoTyres(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-black"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-black font-medium mb-1">
-                      Additional Payload Weight (in kgs)
-                    </label>
-                    <input
-                      type="text"
-                      value={payload_weight}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setPayloadWeight(e.target.value)
-                      }
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-black"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-black font-medium mb-1">
-                      Additional Payload Height (in meters)
-                    </label>
-                    <input
-                      type="text"
-                      value={payload_height}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setPayloadHeight(e.target.value)
-                      }
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 text-black"
-                    />
-                  </div>
-                  <div className="flex justify-end space-x-2 mt-4">
-                    <button
-                      className="px-4 py-2 rounded-xl bg-gray-200 text-black font-medium disabled:opacity-50"
-                      onClick={() => {
-                        setIsEditing(false);
-                        resetForm();
-                      }}
-                      disabled={isLoading}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="px-4 py-2 rounded-xl bg-yellow-500 text-white font-medium disabled:opacity-50"
-                      onClick={updateVehicle}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Saving..." : "Save"}
-                    </button>
-                  </div>
+        {isEditing && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4 backdrop-blur-sm">
+            <div className="max-h-[94vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl border border-zinc-200 bg-white p-4 pb-6 shadow-2xl sm:max-h-[92vh] sm:rounded-3xl sm:p-8">
+              <h3 className="text-xl font-semibold text-zinc-900 sm:text-2xl">Edit Vehicle</h3>
+              <p className="mt-1 text-sm text-zinc-500">Update the selected vehicle profile.</p>
+
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <label className="mb-1.5 block text-sm font-medium text-zinc-700">Name</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-yellow-500 focus:bg-white focus:ring-4 focus:ring-yellow-200"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="mb-1.5 block text-sm font-medium text-zinc-700">Vehicle Type</label>
+                  <select
+                    value={vehicleType}
+                    onChange={(e) => setVehicleType(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-yellow-500 focus:bg-white focus:ring-4 focus:ring-yellow-200"
+                  >
+                    <option value="">Select Type</option>
+                    <option value="Two wheeler">Two wheeler</option>
+                    <option value="Three wheeler">Three wheeler</option>
+                    <option value="Four wheeler">Four wheeler</option>
+                    <option value="Heavy vehicle">Heavy vehicle</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-zinc-700">Height (in meters)</label>
+                  <input
+                    type="text"
+                    value={height}
+                    onChange={(e) => setHeight(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-yellow-500 focus:bg-white focus:ring-4 focus:ring-yellow-200"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-zinc-700">Weight (in kgs)</label>
+                  <input
+                    type="text"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-yellow-500 focus:bg-white focus:ring-4 focus:ring-yellow-200"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-zinc-700">Engine Capacity (in cc)</label>
+                  <input
+                    type="text"
+                    value={capacity}
+                    onChange={(e) => setCapacity(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-yellow-500 focus:bg-white focus:ring-4 focus:ring-yellow-200"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-zinc-700">Vehicle Mileage (in km/l)</label>
+                  <input
+                    type="text"
+                    value={milage}
+                    onChange={(e) => setMilage(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-yellow-500 focus:bg-white focus:ring-4 focus:ring-yellow-200"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-zinc-700">Number of Tyres</label>
+                  <input
+                    type="text"
+                    value={noTyres}
+                    onChange={(e) => setNoTyres(e.target.value)}
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-yellow-500 focus:bg-white focus:ring-4 focus:ring-yellow-200"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-zinc-700">Additional Payload Weight (in kgs)</label>
+                  <input
+                    type="text"
+                    value={payload_weight}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setPayloadWeight(e.target.value)
+                    }
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-yellow-500 focus:bg-white focus:ring-4 focus:ring-yellow-200"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-zinc-700">Additional Payload Height (in meters)</label>
+                  <input
+                    type="text"
+                    value={payload_height}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setPayloadHeight(e.target.value)
+                    }
+                    className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3.5 text-base text-zinc-900 outline-none transition focus:border-yellow-500 focus:bg-white focus:ring-4 focus:ring-yellow-200"
+                  />
                 </div>
               </div>
+
+              <div className="sticky bottom-0 mt-6 flex gap-2 border-t border-zinc-200 bg-white pt-3">
+                <button
+                  className="min-h-11 flex-1 rounded-xl border border-zinc-300 bg-white px-4 py-2 font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50"
+                  onClick={() => {
+                    setIsEditing(false);
+                    resetForm();
+                  }}
+                  disabled={isLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="min-h-11 flex-1 rounded-xl bg-zinc-900 px-4 py-2 font-medium text-white transition hover:bg-zinc-800 disabled:opacity-50"
+                  onClick={updateVehicle}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Saving..." : "Save"}
+                </button>
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
