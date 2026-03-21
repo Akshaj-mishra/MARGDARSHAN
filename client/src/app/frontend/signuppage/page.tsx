@@ -52,7 +52,7 @@ export default function SignUpPage() {
 
         try {
             await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-            router.push('/frontend/mainlanding');
+            router.push('/frontend/loginpage');
         } catch (error) {
             setFirebaseError(error.message || 'Sign up failed');
         }
