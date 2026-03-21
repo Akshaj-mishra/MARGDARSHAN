@@ -1,4 +1,4 @@
-'use client';
+ 'use client';
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import {
   FaTruckMoving,
@@ -211,18 +211,18 @@ export default function DashboardPage() {
                 {darkMode ? <FaSun /> : <FaMoon />}
               </button>
 
-              <a 
+              {/* <a 
                 href="/frontend/loginpage" 
                 className="px-4 py-2 text-sm font-medium rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
               >
                 Login
-              </a>
-              <a 
+              </a> */}
+              {/* <a 
                 href="/frontend/signuppage" 
                 className="px-4 py-2 text-sm font-medium rounded-md bg-yellow-500 text-white hover:bg-yellow-600"
               >
                 Sign Up
-              </a>
+              </a> */}
             </div>
           </div>
         </div>
