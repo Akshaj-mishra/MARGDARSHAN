@@ -192,13 +192,10 @@ export default function DashboardPage() {
                 <a href="../frontend/map_page_main/map_page" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                   My Routes
                 </a>
-                <a href="#" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                {/* <a href="#" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                   Documents
-                </a>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4">
+                </a> */}
+                <div className="flex items-center ml-110 space-x-4">
               <button
                 onClick={handleThemeToggle}
                 title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -210,6 +207,14 @@ export default function DashboardPage() {
               >
                 {darkMode ? <FaSun /> : <FaMoon />}
               </button>
+                <button onClick={() => setShowEmergencyPopup(true)} className="ml-5 bg-red-600 hover:bg-red-700  text-white font-bold py-2 px-5 rounded-full text-xl flex items-center  shadow-lg">
+            <FaExclamationTriangle className="mr-3 text-2xl" /> 
+            EMERGENCY SOS
+          </button>
+              </div>
+            </div>
+
+            
 
               {/* <a 
                 href="/frontend/loginpage" 
@@ -244,12 +249,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Emergency SOS */}
-        <div className="mb-10 text-center">
+        {/* <div className="mb-10 text-center">
           <button onClick={() => setShowEmergencyPopup(true)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-5 px-10 rounded-full text-xl flex items-center justify-center mx-auto animate-pulse shadow-lg">
             <FaExclamationTriangle className="mr-3 text-2xl" /> 
             EMERGENCY SOS
           </button>
-        </div>
+        </div> */}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
@@ -285,7 +290,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2  gap-6 mb-10">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
             <div className="flex items-center">
               <div className="p-4 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400">
@@ -310,7 +315,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
+          {/* <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
             <div className="flex items-center">
               <div className="p-4 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400">
                 <FaRoute className="text-2xl" />
@@ -320,9 +325,9 @@ export default function DashboardPage() {
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">1</p>
               </div>
             </div>
-          </div>
+          </div> */}
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
+          {/* <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
             <div className="flex items-center">
               <div className="p-4 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
                 <FaExclamationTriangle className="text-2xl" />
@@ -332,7 +337,7 @@ export default function DashboardPage() {
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">0</p>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
         {/* Trip Insights & Smart Recommendations */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
@@ -387,7 +392,7 @@ export default function DashboardPage() {
 </div>
 
             {/* Driving Score Placeholder */}
-            <div className="mt-6 p-4 border-t dark:border-gray-700 flex items-center justify-between">
+            {/* <div className="mt-6 p-4 border-t dark:border-gray-700 flex items-center justify-between">
               <div>
                 <p className="text-lg font-semibold dark:text-white">Personal Driving Score</p>
                 <p className="text-sm text-gray-500">Based on braking, speed, and idling</p>
@@ -399,7 +404,7 @@ export default function DashboardPage() {
                  </svg>
                  <span className="absolute text-sm font-bold dark:text-white">85</span>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Smart Recommendations Section */}
