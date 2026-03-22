@@ -170,7 +170,7 @@ function RouteOptimizerComponent() {
     return () => {};
   }, [searchOverlay.open, searchOverlay.mode]);
 
-  const mapStyles = [
+  const darkMapStyles = [
     {
       elementType: "geometry",
       stylers: [{ color: "#393E46" }],
@@ -216,6 +216,59 @@ function RouteOptimizerComponent() {
       featureType: "water",
       elementType: "labels.text.fill",
       stylers: [{ color: "#1976d2" }],
+    },
+    {
+      featureType: "transit",
+      stylers: [{ visibility: "off" }],
+    },
+  ];
+
+  const lightMapStyles = [
+    {
+      elementType: "geometry",
+      stylers: [{ color: "#ffffff" }],
+    },
+    {
+      elementType: "labels.icon",
+      stylers: [{ visibility: "off" }],
+    },
+    {
+      elementType: "labels.text.fill",
+      stylers: [{ color: "#111111" }],
+    },
+    {
+      elementType: "labels.text.stroke",
+      stylers: [{ color: "#ffffff" }],
+    },
+    {
+      featureType: "road",
+      elementType: "geometry",
+      stylers: [{ color: "#ffffff" }],
+    },
+    {
+      featureType: "road.arterial",
+      elementType: "geometry",
+      stylers: [{ color: "#f8fafc" }],
+    },
+    {
+      featureType: "road.highway",
+      elementType: "geometry",
+      stylers: [{ color: "#f1f5f9" }],
+    },
+    {
+      featureType: "road.local",
+      elementType: "geometry",
+      stylers: [{ color: "#ffffff" }],
+    },
+    {
+      featureType: "water",
+      elementType: "geometry",
+      stylers: [{ color: "#bfdbfe" }],
+    },
+    {
+      featureType: "water",
+      elementType: "labels.text.fill",
+      stylers: [{ color: "#1e3a8a" }],
     },
     {
       featureType: "transit",
@@ -281,7 +334,7 @@ function RouteOptimizerComponent() {
         const mapInstance = new gmaps.Map(mapRef.current, {
           center: { lat: 28.6139, lng: 77.209 },
           zoom: 13,
-          styles: mapStyles,
+          styles: isDark ? darkMapStyles : lightMapStyles,
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,
@@ -379,6 +432,11 @@ function RouteOptimizerComponent() {
       clearMarkers();
     };
   }, [loadGoogleMapsScript, clearMarkers]);
+
+  useEffect(() => {
+    if (!map) return;
+    map.setOptions({ styles: isDark ? darkMapStyles : lightMapStyles });
+  }, [map, isDark]);
 
   const optimizeRoute = async () => {
     if (!origin || !destination) {
