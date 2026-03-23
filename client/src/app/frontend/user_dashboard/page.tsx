@@ -92,14 +92,75 @@ export default function DashboardPage() {
     setOtherCosts('');
     setResults({ fuelNeeded: '-', fuelCost: '-', totalCost: '-' });
   };
-  // Dynamic Insights State
-  const [insights, setInsights] = useState({
-    distance: 1240,
-    fuel: 310,
-    spent: 24800,
-    co2Saved: 12.5,
-    score: 85
-  });
+
+// API call updated gettrip values like co2 and all but is not being called any ware @swastik add upgrade logic
+const getTripInsight = async () => {
+  try {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+
+    const response = await fetch(`${baseUrl}/trip_insight`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (!result || result.status !== "success") {
+      return { status: "error", data: null };
+    }
+
+    return result;
+
+  } catch (error) {
+    console.error("getTripInsight error:", error);
+    return { status: "error", data: null };
+  }
+};
+
+
+// State
+const [insights, setInsights] = useState({
+  distance: 0,
+  fuel: 0,
+  spent: 0,
+  co2Saved: 0,
+});
+
+const [loading, setLoading] = useState(true);
+
+
+// Fetch function
+const fetchStats = async () => {
+  setLoading(true);
+
+  const res = await getTripInsight();
+
+  if (res && res.status === "success") {
+    const d = res.data;
+
+    setInsights({
+      distance: d?.distance || 0,
+      fuel: d?.total_fuel || 0,
+      spent: d?.total_spent || 0,
+      co2Saved: d?.co2 || 0,
+    });
+  }
+
+  setLoading(false);
+};
+
+
+// Auto fetch on load
+useEffect(() => {
+  fetchStats();
+}, []);
   
 
   const emergencyContacts = [
@@ -189,9 +250,9 @@ export default function DashboardPage() {
                 <a href="#" className="border-yellow-500 text-gray-900 dark:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                   Dashboard
                 </a>
-                <a href="../frontend/map_page_main/map_page" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                {/* <a href="../frontend/map_page_main/map_page" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                   My Routes
-                </a>
+                </a> */}
                 {/* <a href="#" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                   Documents
                 </a> */}
@@ -258,7 +319,7 @@ export default function DashboardPage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <a href="../frontend/map_page_main" className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-all transform hover:-translate-y-1">
+          <a href="../frontend/map_page_main" className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-all transform hover:-translate-y-1" onClick={() => fetchStats()}>
             <div className="bg-yellow-100 dark:bg-yellow-900/30 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
               <FaRoute className="text-yellow-600 dark:text-yellow-400 text-3xl" />
             </div>

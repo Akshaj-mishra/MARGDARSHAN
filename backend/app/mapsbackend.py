@@ -3,6 +3,8 @@ import requests
 from dotenv import load_dotenv
 from app.database import db
 from model.prediction import predict_mileage, MileageFeatures
+from tripsinsight import TripCollector
+
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
@@ -90,6 +92,8 @@ def route_optimization(origin_latlng, destination_latlng, vehicle_id: str):
     fuel_trigger_km = max_range * 0.5
     break_trigger_sec = 4 * 3600
 
+    
+    
     stops = []
     traveled_km = 0
     traveled_sec = 0
@@ -120,7 +124,15 @@ def route_optimization(origin_latlng, destination_latlng, vehicle_id: str):
                         "place": food
                     })
                 traveled_sec = 0
+    
+    
+    legs = route.get("legs", [])
+    total_distance_m = sum(l["distance"]["value"] for l in legs)
 
+    total_distance_km = total_distance_m / 1000
+
+    TripCollector(total_distance_km, mileage)
+    
     return {
         "summary": {
             "vehicle": v.get("name"),

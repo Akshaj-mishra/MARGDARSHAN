@@ -37,9 +37,6 @@ function RouteOptimizerComponent() {
   const [routePolyline, setRoutePolyline] = useState<any>(null);
   const originInputRef = useRef<HTMLInputElement>(null);
   const destinationInputRef = useRef<HTMLInputElement>(null);
-  const stopInputRef = useRef<HTMLInputElement>(null);
-  const [showStopModal, setShowStopModal] = useState(false);
-  const [stopAddress, setStopAddress] = useState("");
   const [searchOverlay, setSearchOverlay] = useState<{
     open: boolean;
     mode: "origin" | "destination" | null;
@@ -396,22 +393,6 @@ function RouteOptimizerComponent() {
                 }
               });
             }
-
-            const searchInput = document.getElementById(
-              "search-input",
-            ) as HTMLInputElement;
-            if (searchInput && gmaps.places && isMounted) {
-              const autocomplete = new gmaps.places.Autocomplete(searchInput, {
-                types: ["establishment", "geocode"],
-              });
-              autocomplete.bindTo("bounds", mapInstance);
-              autocomplete.addListener("place_changed", () => {
-                const place = autocomplete.getPlace();
-                if (place.geometry && isMounted) {
-                  if (typeof addWaypoint === "function") addWaypoint(place);
-                }
-              });
-            }
           }, 500);
         }
       } catch (error) {
@@ -594,6 +575,26 @@ function RouteOptimizerComponent() {
     }, 100);
   };
 
+
+  const clearMap = () => {
+    if (markersRef.current && markersRef.current.length > 0) {
+      markersRef.current.forEach((marker: any) => {
+        if (marker && marker.setMap) {
+          marker.setMap(null);
+        }
+      });
+      markersRef.current = [];
+    }
+
+    // 🔹 Remove route polyline
+    if (routePolyline && routePolyline.setMap) {
+      routePolyline.setMap(null);
+      setRoutePolyline(null);
+    }
+  };
+
+
+
   const clearAll = () => {
     setWaypoints([]);
     clearMarkers();
@@ -611,10 +612,6 @@ function RouteOptimizerComponent() {
     }
     if (originInputRef.current) originInputRef.current.value = "";
     if (destinationInputRef.current) destinationInputRef.current.value = "";
-    const searchInput = document.getElementById(
-      "search-input",
-    ) as HTMLInputElement;
-    if (searchInput) searchInput.value = "";
     setSearchQuery("");
   };
 
@@ -660,72 +657,9 @@ function RouteOptimizerComponent() {
         markersRef.current.push(marker);
         return updatedWaypoints;
       });
-
-      const searchInput = document.getElementById(
-        "search-input",
-      ) as HTMLInputElement;
-      if (searchInput) searchInput.value = "";
     },
     [map],
   );
-
-  const openStopModal = () => setShowStopModal(true);
-  const closeStopModal = () => {
-    setShowStopModal(false);
-    setStopAddress("");
-  };
-
-  const handleAddStop = async () => {
-    if (!stopAddress || !map) return;
-    try {
-      const backendUrl =
-        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-      const resp = await fetch(
-        `${backendUrl}/geocode?query=${encodeURIComponent(stopAddress)}`,
-      );
-      if (!resp.ok) {
-        const msg = await resp.text();
-        throw new Error(msg || "Geocode API error");
-      }
-      const data = await resp.json();
-      const gmaps = (window as any).google.maps;
-      const loc = new gmaps.LatLng(data.lat, data.lng);
-      addWaypoint({
-        geometry: { location: loc },
-        name: data.formatted_address || stopAddress,
-        formatted_address: data.formatted_address || stopAddress,
-      });
-      closeStopModal();
-    } catch (e: any) {
-      alert("Could not find location for stop: " + (e?.message || stopAddress));
-    }
-  };
-
-  const stopAutocompleteRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (
-      showStopModal &&
-      stopAutocompleteRef.current &&
-      typeof window !== "undefined"
-    ) {
-      const gmaps = (window as any).google.maps;
-      if (gmaps && gmaps.places) {
-        const stopAutocomplete = new gmaps.places.Autocomplete(
-          stopAutocompleteRef.current,
-          {
-            types: ["establishment", "geocode"],
-          },
-        );
-        stopAutocomplete.addListener("place_changed", () => {
-          const place = stopAutocomplete.getPlace();
-          if (place.geometry) {
-            setStopAddress(place.formatted_address || place.name || "");
-          }
-        });
-      }
-    }
-  }, [showStopModal]);
 
   const reorderWaypoints = (fromIndex: number, toIndex: number) => {
     setWaypoints((prev) => {
@@ -832,26 +766,6 @@ function RouteOptimizerComponent() {
               <div className="flex gap-2 justify-end">
                 <button
                   type="button"
-                  onClick={openStopModal}
-                  className="w-10 h-10 bg-yellow-500 hover:bg-yellow-600 rounded-full flex items-center justify-center shadow"
-                  title="Add Stop"
-                >
-                  <svg
-                    className="w-5 h-5 text-black"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                </button>
-                <button
-                  type="button"
                   onClick={openVehicleSelector}
                   className="px-3 py-2 bg-white border border-gray-300 hover:border-gray-400 rounded-lg text-sm text-gray-800 flex items-center gap-2"
                   title="Select Vehicle"
@@ -874,10 +788,12 @@ function RouteOptimizerComponent() {
                       : "Select Vehicle"}
                   </span>
                 </button>
+
+                 {/* fix it */}
                 <button
                   onClick={optimizeRoute}
                   disabled={!origin || !destination || isLoading}
-                  className={`px-5 py-2 bg-blue-700 hover:bg-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-colors min-w-[100px] flex items-center justify-center text-sm`}
+                  className="px-5 py-2 bg-blue-700 hover:bg-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-colors min-w-[100px] flex items-center justify-center text-sm"
                 >
                   {isLoading ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -885,10 +801,12 @@ function RouteOptimizerComponent() {
                     "Optimize Route"
                   )}
                 </button>
+
                 {(waypoints.length > 0 || origin || destination) && (
                   <button
-                    onClick={clearAll}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-lg font-medium transition-colors text-sm"
+                    onClick={clearMap}
+                    disabled={isLoading}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-lg font-medium transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Clear
                   </button>
@@ -929,94 +847,6 @@ function RouteOptimizerComponent() {
           </div>
         </div>
       </div>
-
-      {showStopModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div
-            className={`rounded-lg shadow-lg p-6 w-full max-w-xs mx-auto ${
-              isDark ? "bg-gray-900 text-white" : "bg-white text-gray-900"
-            }`}
-          >
-            <h2 className="text-lg font-semibold mb-3">Add Stop</h2>
-            <input
-              ref={stopAutocompleteRef}
-              type="text"
-              value={stopAddress}
-              onChange={(e) => setStopAddress(e.target.value)}
-              placeholder="Enter stop address..."
-              className={`w-full px-3 py-2 mb-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 ${
-                isDark
-                  ? "bg-gray-800 border border-gray-700 text-white placeholder-gray-400"
-                  : "bg-white border border-gray-300 text-gray-900 placeholder-gray-500"
-              }`}
-            />
-            <div className="mb-3">
-              <h3 className="text-sm font-medium mb-1">Current Stops</h3>
-              <ul className="space-y-1">
-                {waypoints.map((wp, idx) => (
-                  <li
-                    key={wp.id}
-                    draggable
-                    onDragStart={(e) => {
-                      dragIndexRef.current = idx;
-                      e.dataTransfer?.setData("text/plain", String(idx));
-                    }}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      const from =
-                        dragIndexRef.current ??
-                        Number(e.dataTransfer.getData("text/plain"));
-                      const to = idx;
-                      if (from !== null && from !== to)
-                        reorderWaypoints(from, to);
-                      dragIndexRef.current = null;
-                    }}
-                    className={`flex items-center justify-between px-2 py-1 rounded ${
-                      isDark ? "bg-gray-800" : "bg-gray-50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="cursor-move text-gray-400">≡</span>
-                      <span className="truncate text-xs">
-                        {idx + 1}. {wp.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => removeWaypoint(wp.id)}
-                        className="text-red-500 hover:text-red-700 text-xs px-2 py-1 rounded"
-                        title="Remove stop"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={closeStopModal}
-                className={`px-3 py-2 rounded-lg font-medium ${
-                  isDark
-                    ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
-                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                }`}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddStop}
-                className="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-black font-medium"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showVehicleModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">

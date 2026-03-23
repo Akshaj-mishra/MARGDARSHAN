@@ -8,6 +8,10 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from app.database import router as vehicles_router
 from app.mapsbackend import route_optimization
+from app.tripsinsight import get_stats
+
+
+
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 frontend_source = os.getenv("FASTAPI_FRONTEND_SOURCE_LINK") or "http://localhost:3000"
@@ -16,14 +20,10 @@ if not GOOGLE_API_KEY:
 
 app = FastAPI(title="Backend", version="1.0.0")
 
-origins = list({
-    frontend_source,
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-}) if frontend_source else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -139,6 +139,13 @@ def get_route(req: RouteRequest):
             "optimization": optimization_results  
         },
     }
+
+
+
+@app.post("/trip_insight")
+def post():
+    stat = get_stats()
+    return  stat
 
 
 @app.get("/health")
