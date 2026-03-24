@@ -3,7 +3,7 @@ import requests
 from dotenv import load_dotenv
 from app.database import db
 from model.prediction import predict_mileage, MileageFeatures
-from tripsinsight import TripCollector
+from app.tripsinsight import TripCollector
 
 
 load_dotenv()

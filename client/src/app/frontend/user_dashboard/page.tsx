@@ -1,4 +1,4 @@
- 'use client';
+'use client';
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import {
   FaTruckMoving,
@@ -12,7 +12,8 @@ import {
   FaEdit,
   FaCheckCircle,
   FaClock,
-  FaArrowLeft
+  FaArrowLeft,
+  FaSync
 } from 'react-icons/fa';
 
 export default function DashboardPage() {
@@ -30,6 +31,17 @@ export default function DashboardPage() {
   const [fuelPrice, setFuelPrice] = useState('95.0');
   const [otherCosts, setOtherCosts] = useState('');
   const [results, setResults] = useState({ fuelNeeded: '-', fuelCost: '-', totalCost: '-' });
+
+  // State
+  const [insights, setInsights] = useState({
+    distance: 0,
+    fuel: 0,
+    spent: 0,
+    co2Saved: 0,
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Theme logic
   useLayoutEffect(() => {
@@ -55,113 +67,85 @@ export default function DashboardPage() {
     setDarkMode(prev => !prev);
   };
 
-  // Calculator handlers
-  const handleCalculate = () => {
-    const d = parseFloat(distance) || 0;
-    const e = parseFloat(efficiency) || 1;
-    const fp = parseFloat(fuelPrice) || 0;
-    const oc = parseFloat(otherCosts) || 0;
+  // API call to get trip values
+  const getTripInsight = async () => {
+    try {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
-    const fuelNeeded = d / e;
-    const fuelCost = fuelNeeded * fp;
-    const totalCost = fuelCost + oc;
+      const response = await fetch(`${baseUrl}/trip_insight`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-    setResults({
-      fuelNeeded: fuelNeeded ? `${fuelNeeded.toFixed(2)} L` : '-',
-      fuelCost: fuelCost ? `₹${fuelCost.toFixed(2)}` : '-',
-      totalCost: totalCost ? `₹${totalCost.toFixed(2)}` : '-',
-    });
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
 
-    // Update the Dashboard Insights dynamically
-    if (d > 0) {
-      setInsights(prev => ({
-        ...prev,
-        distance: prev.distance + d,
-        fuel: prev.fuel + fuelNeeded,
-        spent: prev.spent + totalCost,
-        // Assume an eco-route saves ~10% CO2 compared to standard
-        co2Saved: prev.co2Saved + (fuelNeeded * 0.23) 
-      }));
-    }
-  };
+      const result = await response.json();
 
-  const handleClear = () => {
-    setDistance('');
-    setEfficiency('7.5');
-    setFuelPrice('95.0');
-    setOtherCosts('');
-    setResults({ fuelNeeded: '-', fuelCost: '-', totalCost: '-' });
-  };
+      if (!result || result.status !== "success") {
+        return { status: "error", data: null };
+      }
 
-// API call updated gettrip values like co2 and all but is not being called any ware @swastik add upgrade logic
-const getTripInsight = async () => {
-  try {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      return result;
 
-    const response = await fetch(`${baseUrl}/trip_insight`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error: ${response.status}`);
-    }
-
-    const result = await response.json();
-
-    if (!result || result.status !== "success") {
+    } catch (error) {
+      console.error("getTripInsight error:", error);
       return { status: "error", data: null };
     }
+  };
 
-    return result;
+  // Fetch function with loading state
+  const fetchStats = async (showRefreshAnimation = false) => {
+    if (showRefreshAnimation) {
+      setRefreshing(true);
+    }
+    setLoading(true);
 
-  } catch (error) {
-    console.error("getTripInsight error:", error);
-    return { status: "error", data: null };
-  }
-};
+    try {
+      const res = await getTripInsight();
 
+      if (res && res.status === "success") {
+        const d = res.data;
 
-// State
-const [insights, setInsights] = useState({
-  distance: 0,
-  fuel: 0,
-  spent: 0,
-  co2Saved: 0,
-});
+        setInsights({
+          distance: d?.distance || 0,
+          fuel: d?.total_fuel || 0,
+          spent: d?.total_spent || 0,
+          co2Saved: d?.co2 || 0,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    } finally {
+      setLoading(false);
+      if (showRefreshAnimation) {
+        // Keep refresh animation for at least 500ms for better UX
+        setTimeout(() => setRefreshing(false), 500);
+      }
+    }
+  };
 
-const [loading, setLoading] = useState(true);
+  // Auto fetch on load (refresh)
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
+  // Handler for My Routes click with refresh
+  const handleMyRoutesClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    await fetchStats(true);
+    // Navigate after refresh
+    window.location.href = "../frontend/map_page_main";
+  };
 
-// Fetch function
-const fetchStats = async () => {
-  setLoading(true);
-
-  const res = await getTripInsight();
-
-  if (res && res.status === "success") {
-    const d = res.data;
-
-    setInsights({
-      distance: d?.distance || 0,
-      fuel: d?.total_fuel || 0,
-      spent: d?.total_spent || 0,
-      co2Saved: d?.co2 || 0,
-    });
-  }
-
-  setLoading(false);
-};
-
-
-// Auto fetch on load
-useEffect(() => {
-  fetchStats();
-}, []);
-  
+  // Handler for manual refresh button (optional)
+  const handleManualRefresh = async () => {
+    await fetchStats(true);
+  };
 
   const emergencyContacts = [
     { label: 'Police', number: '100' },
@@ -190,14 +174,51 @@ useEffect(() => {
     }
   };
 
-  if(showEmergencyPopup){
+  // Calculator handlers
+  const handleCalculate = () => {
+    const d = parseFloat(distance) || 0;
+    const e = parseFloat(efficiency) || 1;
+    const fp = parseFloat(fuelPrice) || 0;
+    const oc = parseFloat(otherCosts) || 0;
+
+    const fuelNeeded = d / e;
+    const fuelCost = fuelNeeded * fp;
+    const totalCost = fuelCost + oc;
+
+    setResults({
+      fuelNeeded: fuelNeeded ? `${fuelNeeded.toFixed(2)} L` : '-',
+      fuelCost: fuelCost ? `₹${fuelCost.toFixed(2)}` : '-',
+      totalCost: totalCost ? `₹${totalCost.toFixed(2)}` : '-',
+    });
+
+    // Update the Dashboard Insights dynamically
+    if (d > 0) {
+      setInsights(prev => ({
+        ...prev,
+        distance: prev.distance + d,
+        fuel: prev.fuel + fuelNeeded,
+        spent: prev.spent + totalCost,
+        co2Saved: prev.co2Saved + (fuelNeeded * 0.23)
+      }));
+    }
+  };
+
+  const handleClear = () => {
+    setDistance('');
+    setEfficiency('7.5');
+    setFuelPrice('95.0');
+    setOtherCosts('');
+    setResults({ fuelNeeded: '-', fuelCost: '-', totalCost: '-' });
+  };
+
+  if (showEmergencyPopup) {
     return (
       <div className="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors duration-200 relative">
         <div className="flex items-center justify-center h-screen p-4">
           <div className="w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
             <div className="bg-red-600 text-white p-5">
               <h2 className="text-2xl font-bold flex items-center gap-2">
-                <FaExclamationTriangle className="text-2xl" /> 
+                <FaExclamationTriangle className="text-2xl" />
                 Emergency Contacts
               </h2>
             </div>
@@ -250,45 +271,31 @@ useEffect(() => {
                 <a href="#" className="border-yellow-500 text-gray-900 dark:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                   Dashboard
                 </a>
-                {/* <a href="../frontend/map_page_main/map_page" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                <a 
+                  href="../frontend/map_page_main" 
+                  onClick={handleMyRoutesClick}
+                  className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >
                   My Routes
-                </a> */}
-                {/* <a href="#" className="border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                  Documents
-                </a> */}
+                </a>
                 <div className="flex items-center ml-110 space-x-4">
-              <button
-                onClick={handleThemeToggle}
-                title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                className={`p-2 rounded-full transition-colors ${
-                  darkMode 
-                    ? 'bg-gray-700 text-yellow-300 hover:bg-gray-600' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {darkMode ? <FaSun /> : <FaMoon />}
-              </button>
-                <button onClick={() => setShowEmergencyPopup(true)} className="ml-5 bg-red-600 hover:bg-red-700  text-white font-bold py-2 px-5 rounded-full text-xl flex items-center  shadow-lg">
-            <FaExclamationTriangle className="mr-3 text-2xl" /> 
-            EMERGENCY SOS
-          </button>
+                  <button
+                    onClick={handleThemeToggle}
+                    title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                    className={`p-2 rounded-full transition-colors ${
+                      darkMode 
+                        ? 'bg-gray-700 text-yellow-300 hover:bg-gray-600' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {darkMode ? <FaSun /> : <FaMoon />}
+                  </button>
+                  <button onClick={() => setShowEmergencyPopup(true)} className="ml-5 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-full text-xl flex items-center shadow-lg">
+                    <FaExclamationTriangle className="mr-3 text-2xl" />
+                    EMERGENCY SOS
+                  </button>
+                </div>
               </div>
-            </div>
-
-            
-
-              {/* <a 
-                href="/frontend/loginpage" 
-                className="px-4 py-2 text-sm font-medium rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
-              >
-                Login
-              </a> */}
-              {/* <a 
-                href="/frontend/signuppage" 
-                className="px-4 py-2 text-sm font-medium rounded-md bg-yellow-500 text-white hover:bg-yellow-600"
-              >
-                Sign Up
-              </a> */}
             </div>
           </div>
         </div>
@@ -309,17 +316,13 @@ useEffect(() => {
           </p>
         </div>
 
-        {/* Emergency SOS */}
-        {/* <div className="mb-10 text-center">
-          <button onClick={() => setShowEmergencyPopup(true)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-5 px-10 rounded-full text-xl flex items-center justify-center mx-auto animate-pulse shadow-lg">
-            <FaExclamationTriangle className="mr-3 text-2xl" /> 
-            EMERGENCY SOS
-          </button>
-        </div> */}
-
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <a href="../frontend/map_page_main" className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-all transform hover:-translate-y-1" onClick={() => fetchStats()}>
+          <a 
+            href="../frontend/map_page_main" 
+            onClick={handleMyRoutesClick}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-all transform hover:-translate-y-1 cursor-pointer"
+          >
             <div className="bg-yellow-100 dark:bg-yellow-900/30 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
               <FaRoute className="text-yellow-600 dark:text-yellow-400 text-3xl" />
             </div>
@@ -351,7 +354,7 @@ useEffect(() => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2  gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
             <div className="flex items-center">
               <div className="p-4 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400">
@@ -375,97 +378,78 @@ useEffect(() => {
               </div>
             </div>
           </div>
-
-          {/* <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
-            <div className="flex items-center">
-              <div className="p-4 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400">
-                <FaRoute className="text-2xl" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-sm text-gray-500 dark:text-gray-400">Active Routes</h3>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">1</p>
-              </div>
-            </div>
-          </div> */}
-
-          {/* <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
-            <div className="flex items-center">
-              <div className="p-4 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
-                <FaExclamationTriangle className="text-2xl" />
-              </div>
-              <div className="ml-4">
-                <h3 className="text-sm text-gray-500 dark:text-gray-400">Pending Issues</h3>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">0</p>
-              </div>
-            </div>
-          </div> */}
         </div>
+
         {/* Trip Insights & Smart Recommendations */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
           
           {/* Trip Insights Section */}
           <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-              <FaRoute className="text-yellow-500" /> Trip Insights (Weekly)
-            </h3>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <FaRoute className="text-yellow-500" /> Trip Insights (Weekly)
+              </h3>
+              <button
+                onClick={handleManualRefresh}
+                disabled={refreshing}
+                className={`p-2 rounded-full transition-all ${
+                  refreshing 
+                    ? 'bg-gray-200 dark:bg-gray-700 cursor-not-allowed' 
+                    : 'bg-yellow-100 dark:bg-yellow-900/30 hover:bg-yellow-200 dark:hover:bg-yellow-900/50'
+                }`}
+                title="Refresh trip insights"
+              >
+                <FaSync className={`text-yellow-600 dark:text-yellow-400 ${refreshing ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-  {/* Distance Card */}
-  <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
-    <p className="text-xs text-gray-500 uppercase font-semibold">Distance</p>
-    <p className="text-xl font-bold dark:text-white transition-all">
-      {insights.distance.toLocaleString()} <span className="text-sm font-normal">km</span>
-    </p>
-  </div>
-
-  {/* NEW: Total Fuel Used Card */}
-  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center border border-green-100 dark:border-green-800">
-    <p className="text-xs text-green-600 dark:text-green-400 uppercase font-bold flex items-center justify-center gap-1">
-      <FaGasPump className="text-[10px]" /> Total Fuel
-    </p>
-    <p className="text-xl font-bold text-green-700 dark:text-green-300">
-      {insights.fuel.toFixed(1)} <span className="text-sm font-normal">L</span>
-    </p>
-    {/* Small visual indicator of fuel usage */}
-    <div className="w-full bg-gray-200 dark:bg-gray-600 h-1 mt-2 rounded-full overflow-hidden">
-      <div 
-        className="bg-green-500 h-full transition-all duration-500" 
-        style={{ width: `${Math.min((insights.fuel / 500) * 100, 100)}%` }}
-      ></div>
-    </div>
-  </div>
-
-  {/* Total Spent Card */}
-  <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
-    <p className="text-xs text-gray-500 uppercase font-semibold">Total Spent</p>
-    <p className="text-xl font-bold text-yellow-600">
-      ₹{insights.spent.toLocaleString()}
-    </p>
-  </div>
-
-  {/* CO2 Saved Card */}
-  <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
-    <p className="text-xs text-gray-500 uppercase font-semibold">CO₂ Saved</p>
-    <p className="text-xl font-bold text-blue-500">
-      {insights.co2Saved.toFixed(1)} <span className="text-sm font-normal">kg</span>
-    </p>
-  </div>
-</div>
-
-            {/* Driving Score Placeholder */}
-            {/* <div className="mt-6 p-4 border-t dark:border-gray-700 flex items-center justify-between">
-              <div>
-                <p className="text-lg font-semibold dark:text-white">Personal Driving Score</p>
-                <p className="text-sm text-gray-500">Based on braking, speed, and idling</p>
+            {loading && !refreshing ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
               </div>
-              <div className="relative w-16 h-16 flex items-center justify-center">
-                 <svg className="w-full h-full transform -rotate-90">
-                    <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-gray-200 dark:text-gray-700" />
-                    <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray={175} strokeDashoffset={175 - (175 * 85) / 100} className="text-green-500" />
-                 </svg>
-                 <span className="absolute text-sm font-bold dark:text-white">85</span>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* Distance Card */}
+                <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
+                  <p className="text-xs text-gray-500 uppercase font-semibold">Distance</p>
+                  <p className="text-xl font-bold dark:text-white transition-all">
+                    {insights.distance.toLocaleString()} <span className="text-sm font-normal">km</span>
+                  </p>
+                </div>
+
+                {/* Total Fuel Used Card */}
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center border border-green-100 dark:border-green-800">
+                  <p className="text-xs text-green-600 dark:text-green-400 uppercase font-bold flex items-center justify-center gap-1">
+                    <FaGasPump className="text-[10px]" /> Total Fuel
+                  </p>
+                  <p className="text-xl font-bold text-green-700 dark:text-green-300">
+                    {insights.fuel.toFixed(1)} <span className="text-sm font-normal">L</span>
+                  </p>
+                  <div className="w-full bg-gray-200 dark:bg-gray-600 h-1 mt-2 rounded-full overflow-hidden">
+                    <div 
+                      className="bg-green-500 h-full transition-all duration-500" 
+                      style={{ width: `${Math.min((insights.fuel / 500) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Total Spent Card */}
+                <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
+                  <p className="text-xs text-gray-500 uppercase font-semibold">Total Spent</p>
+                  <p className="text-xl font-bold text-yellow-600">
+                    ₹{insights.spent.toLocaleString()}
+                  </p>
+                </div>
+
+                {/* CO2 Saved Card */}
+                <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center">
+                  <p className="text-xs text-gray-500 uppercase font-semibold">CO₂ Saved</p>
+                  <p className="text-xl font-bold text-blue-500">
+                    {insights.co2Saved.toFixed(1)} <span className="text-sm font-normal">kg</span>
+                  </p>
+                </div>
               </div>
-            </div> */}
+            )}
           </div>
 
           {/* Smart Recommendations Section */}
