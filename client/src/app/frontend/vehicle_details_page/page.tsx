@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useLayoutEffect } from "react";
 import { Truck, Plus, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { auth } from "../firebase/config";
+import { onAuthStateChanged, User } from "firebase/auth";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -18,10 +20,12 @@ interface Vehicle {
   noTyres: number;
   additionalPayloadWeight?: number;
   additionalPayloadHeight?: number;
+  userId?: string;
 }
 
 const Vehicle_details = () => {
   const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [vehicleType, setVehicleType] = useState<string>("");
@@ -74,13 +78,24 @@ const Vehicle_details = () => {
   }, []);
 
   useEffect(() => {
-    fetchVehicles();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      if (user) {
+        fetchVehicles(user.uid);
+      } else {
+        setVehicleProfiles([]);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
-  const fetchVehicles = async () => {
+  const fetchVehicles = async (uid?: string) => {
+    const userIdToUse = uid || currentUser?.uid;
+    if (!userIdToUse) return;
+    
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_BASE_URL}/vehicles`);
+      const response = await fetch(`${API_BASE_URL}/vehicles?userId=${userIdToUse}`);
       if (!response.ok) throw new Error("Failed to fetch vehicles");
       const data = await response.json();
       setVehicleProfiles(data);
@@ -104,6 +119,10 @@ const Vehicle_details = () => {
     }
     if (!vehicleType) {
       setError("Vehicle type is required");
+      return;
+    }
+    if (!currentUser) {
+      setError("User not authenticated");
       return;
     }
 
@@ -138,6 +157,7 @@ const Vehicle_details = () => {
       noTyres: parseInt(computedTyres) || 0,
       additionalPayloadWeight: parseInt(payload_weight) || 0,
       additionalPayloadHeight: parseFloat(payload_height) || 0.0,
+      userId: currentUser.uid,
     };
 
     try {
@@ -165,6 +185,10 @@ const Vehicle_details = () => {
       setError("Vehicle name is required");
       return;
     }
+    if (!currentUser) {
+      setError("User not authenticated");
+      return;
+    }
     const vehicleData: Vehicle = {
       name,
       vehicleType,
@@ -176,6 +200,7 @@ const Vehicle_details = () => {
       noTyres: parseInt(noTyres) || 0,
       additionalPayloadWeight: parseInt(payload_weight) || 0,
       additionalPayloadHeight: parseFloat(payload_height) || 0.0,
+      userId: currentUser.uid,
     };
 
     try {
