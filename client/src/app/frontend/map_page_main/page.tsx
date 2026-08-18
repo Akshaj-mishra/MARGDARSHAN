@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
-
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 type Waypoint = {
   location: any;
   name: string;
@@ -9,17 +10,18 @@ type Waypoint = {
 };
 
 type Vehicle = {
-  id?: string;
+  id?: int;
   name: string;
   vehicleType: string;
-  engineCapacity: string;
-  weight: string;
-  height: string;
-  additionalPayloadWeight?: string;
-  additionalPayloadHeight?: string;
+  engineCapacity: int;
+  weight: int;
+  height: int;
+  additionalPayloadWeight?: int;
+  additionalPayloadHeight?: int;
 };
 
 function RouteOptimizerComponent() {
+  const router = useRouter();
   const mapRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<any[]>([]);
   const scriptLoadedRef = useRef(false);
@@ -34,14 +36,14 @@ function RouteOptimizerComponent() {
   const [isMapReady, setIsMapReady] = useState(false);
   const [origin, setOrigin] = useState<any>(null);
   const [destination, setDestination] = useState<any>(null);
+  const [originText, setOriginText] = useState("");
+  const [destinationText, setDestinationText] = useState("");
   const [routePolyline, setRoutePolyline] = useState<any>(null);
   const originInputRef = useRef<HTMLInputElement>(null);
   const destinationInputRef = useRef<HTMLInputElement>(null);
-  const [searchOverlay, setSearchOverlay] = useState<{
-    open: boolean;
-    mode: "origin" | "destination" | null;
-  }>({ open: false, mode: null });
-  const overlayInputRef = useRef<HTMLInputElement>(null);
+  const stopInputRef = useRef<HTMLInputElement>(null);
+  const [showStopModal, setShowStopModal] = useState(false);
+  const [stopAddress, setStopAddress] = useState("");
   const dragIndexRef = useRef<number | null>(null);
 
   const [showVehicleModal, setShowVehicleModal] = useState(false);
@@ -97,13 +99,6 @@ function RouteOptimizerComponent() {
     } catch (e) {}
   };
 
-  const openSearchOverlay = (mode: "origin" | "destination") => {
-    setSearchOverlay({ open: true, mode });
-    setTimeout(() => overlayInputRef.current?.focus(), 50);
-  };
-  const closeSearchOverlay = () =>
-    setSearchOverlay({ open: false, mode: null });
-
   const openVehicleSelector = () => {
     setShowVehicleModal(true);
   };
@@ -140,32 +135,6 @@ function RouteOptimizerComponent() {
       fetchVehicles();
     }
   }, [showVehicleModal, fetchVehicles]);
-
-  useEffect(() => {
-    if (!searchOverlay.open || typeof window === "undefined") return;
-    const gmaps = (window as any).google?.maps;
-    if (!gmaps || !overlayInputRef.current) return;
-    const ac = new gmaps.places.Autocomplete(overlayInputRef.current, {
-      types: ["establishment", "geocode"],
-    });
-    ac.addListener("place_changed", () => {
-      const place = ac.getPlace();
-      if (!place || !place.geometry) return;
-      if (searchOverlay.mode === "origin") {
-        setOrigin(place.geometry.location);
-        if (originInputRef.current)
-          originInputRef.current.value =
-            place.formatted_address || place.name || "";
-      } else if (searchOverlay.mode === "destination") {
-        setDestination(place.geometry.location);
-        if (destinationInputRef.current)
-          destinationInputRef.current.value =
-            place.formatted_address || place.name || "";
-      }
-      closeSearchOverlay();
-    });
-    return () => {};
-  }, [searchOverlay.open, searchOverlay.mode]);
 
   const darkMapStyles = [
     {
@@ -370,9 +339,7 @@ function RouteOptimizerComponent() {
                 const place = originAutocomplete.getPlace();
                 if (place.geometry && isMounted) {
                   setOrigin(place.geometry.location);
-                  if (originInputRef.current)
-                    originInputRef.current.value =
-                      place.formatted_address || place.name || "";
+                  setOriginText(place.formatted_address || place.name || "");
                 }
               });
             }
@@ -387,9 +354,25 @@ function RouteOptimizerComponent() {
                 const place = destAutocomplete.getPlace();
                 if (place.geometry && isMounted) {
                   setDestination(place.geometry.location);
-                  if (destinationInputRef.current)
-                    destinationInputRef.current.value =
-                      place.formatted_address || place.name || "";
+                  setDestinationText(
+                    place.formatted_address || place.name || "",
+                  );
+                }
+              });
+            }
+
+            const searchInput = document.getElementById(
+              "search-input",
+            ) as HTMLInputElement;
+            if (searchInput && gmaps.places && isMounted) {
+              const autocomplete = new gmaps.places.Autocomplete(searchInput, {
+                types: ["establishment", "geocode"],
+              });
+              autocomplete.bindTo("bounds", mapInstance);
+              autocomplete.addListener("place_changed", () => {
+                const place = autocomplete.getPlace();
+                if (place.geometry && isMounted) {
+                  if (typeof addWaypoint === "function") addWaypoint(place);
                 }
               });
             }
@@ -575,26 +558,6 @@ function RouteOptimizerComponent() {
     }, 100);
   };
 
-
-  const clearMap = () => {
-    if (markersRef.current && markersRef.current.length > 0) {
-      markersRef.current.forEach((marker: any) => {
-        if (marker && marker.setMap) {
-          marker.setMap(null);
-        }
-      });
-      markersRef.current = [];
-    }
-
-    // 🔹 Remove route polyline
-    if (routePolyline && routePolyline.setMap) {
-      routePolyline.setMap(null);
-      setRoutePolyline(null);
-    }
-  };
-
-
-
   const clearAll = () => {
     setWaypoints([]);
     clearMarkers();
@@ -606,13 +569,28 @@ function RouteOptimizerComponent() {
     setTotalDuration("");
     setOrigin(null);
     setDestination(null);
+    setOriginText("");
+    setDestinationText("");
     if (map) {
       map.setCenter({ lat: 28.6139, lng: 77.209 });
       map.setZoom(13);
     }
-    if (originInputRef.current) originInputRef.current.value = "";
-    if (destinationInputRef.current) destinationInputRef.current.value = "";
+    const searchInput = document.getElementById(
+      "search-input",
+    ) as HTMLInputElement;
+    if (searchInput) searchInput.value = "";
     setSearchQuery("");
+  };
+
+  const swapOriginDestination = () => {
+    const currentOrigin = origin;
+    const currentDestination = destination;
+    const currentOriginText = originText;
+    const currentDestinationText = destinationText;
+    setOrigin(currentDestination);
+    setDestination(currentOrigin);
+    setOriginText(currentDestinationText);
+    setDestinationText(currentOriginText);
   };
 
   const recenterMap = () => {
@@ -657,9 +635,72 @@ function RouteOptimizerComponent() {
         markersRef.current.push(marker);
         return updatedWaypoints;
       });
+
+      const searchInput = document.getElementById(
+        "search-input",
+      ) as HTMLInputElement;
+      if (searchInput) searchInput.value = "";
     },
     [map],
   );
+
+  const openStopModal = () => setShowStopModal(true);
+  const closeStopModal = () => {
+    setShowStopModal(false);
+    setStopAddress("");
+  };
+
+  const handleAddStop = async () => {
+    if (!stopAddress || !map) return;
+    try {
+      const backendUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      const resp = await fetch(
+        `${backendUrl}/geocode?query=${encodeURIComponent(stopAddress)}`,
+      );
+      if (!resp.ok) {
+        const msg = await resp.text();
+        throw new Error(msg || "Geocode API error");
+      }
+      const data = await resp.json();
+      const gmaps = (window as any).google.maps;
+      const loc = new gmaps.LatLng(data.lat, data.lng);
+      addWaypoint({
+        geometry: { location: loc },
+        name: data.formatted_address || stopAddress,
+        formatted_address: data.formatted_address || stopAddress,
+      });
+      closeStopModal();
+    } catch (e: any) {
+      alert("Could not find location for stop: " + (e?.message || stopAddress));
+    }
+  };
+
+  const stopAutocompleteRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (
+      showStopModal &&
+      stopAutocompleteRef.current &&
+      typeof window !== "undefined"
+    ) {
+      const gmaps = (window as any).google.maps;
+      if (gmaps && gmaps.places) {
+        const stopAutocomplete = new gmaps.places.Autocomplete(
+          stopAutocompleteRef.current,
+          {
+            types: ["establishment", "geocode"],
+          },
+        );
+        stopAutocomplete.addListener("place_changed", () => {
+          const place = stopAutocomplete.getPlace();
+          if (place.geometry) {
+            setStopAddress(place.formatted_address || place.name || "");
+          }
+        });
+      }
+    }
+  }, [showStopModal]);
 
   const reorderWaypoints = (fromIndex: number, toIndex: number) => {
     setWaypoints((prev) => {
@@ -700,70 +741,164 @@ function RouteOptimizerComponent() {
       <div className="absolute top-4 left-0 right-0 z-50 pointer-events-auto">
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-3">
           <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 mb-1">
+              <button
+                onClick={() => router.push('/frontend/dashboard')}
+                className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
+                  isDark
+                    ? "bg-black/70 text-gray-300 hover:bg-black/90 hover:text-white border border-white/10"
+                    : "bg-white/90 text-gray-600 hover:bg-white hover:text-gray-900 border border-gray-200"
+                } shadow-xl backdrop-blur-md`}
+                aria-label="Go back to dashboard"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+            </div>
             <div
-              className={`flex flex-col sm:flex-row gap-2 sm:gap-4 rounded-xl p-2 shadow-sm ${
+              className={`rounded-2xl p-3 sm:p-4 border shadow-xl ${
                 isDark
-                  ? "bg-black/70 text-white backdrop-blur-sm"
-                  : "bg-white/80 text-gray-900 backdrop-blur-md"
+                  ? "bg-black/70 text-white backdrop-blur-md border-white/10"
+                  : "bg-white/90 text-gray-900 backdrop-blur-md border-gray-200"
               }`}
             >
-              <div className="flex-1">
-                {origin ? (
-                  <button
-                    onClick={() => openSearchOverlay("origin")}
-                    className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm"
-                    title="Edit origin"
+              <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-3 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-2 lg:gap-3 items-end">
+                  <div className="space-y-1">
+                    <div
+                      className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${
+                        isDark
+                          ? "bg-gray-900/80 border-gray-700"
+                          : "bg-white border-gray-300"
+                      }`}
+                    >
+                      <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                        A
+                      </span>
+                      <input
+                        ref={originInputRef}
+                        type="text"
+                        value={originText}
+                        onChange={(e) => setOriginText(e.target.value)}
+                        placeholder="Enter pickup location"
+                        className={`w-full bg-transparent text-sm focus:outline-none ${
+                          isDark
+                            ? "text-white placeholder-gray-400"
+                            : "text-gray-900 placeholder-gray-500"
+                        }`}
+                      />
+                      {originText && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOrigin(null);
+                            setOriginText("");
+                          }}
+                          className={`text-xs px-2 py-1 rounded-md ${
+                            isDark
+                              ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                              : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                          }`}
+                          title="Clear source"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={swapOriginDestination}
+                      className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${
+                        isDark
+                          ? "border-gray-700 bg-gray-900 hover:bg-gray-800 text-gray-200"
+                          : "border-gray-300 bg-white hover:bg-gray-100 text-gray-700"
+                      }`}
+                      title="Swap source and destination"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M8 7h11m0 0l-3-3m3 3l-3 3M16 17H5m0 0l3-3m-3 3l3 3"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div
+                      className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${
+                        isDark
+                          ? "bg-gray-900/80 border-gray-700"
+                          : "bg-white border-gray-300"
+                      }`}
+                    >
+                      <span className="w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                        B
+                      </span>
+                      <input
+                        ref={destinationInputRef}
+                        type="text"
+                        value={destinationText}
+                        onChange={(e) => setDestinationText(e.target.value)}
+                        placeholder="Enter drop location"
+                        className={`w-full bg-transparent text-sm focus:outline-none ${
+                          isDark
+                            ? "text-white placeholder-gray-400"
+                            : "text-gray-900 placeholder-gray-500"
+                        }`}
+                      />
+                      {destinationText && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDestination(null);
+                            setDestinationText("");
+                          }}
+                          className={`text-xs px-2 py-1 rounded-md ${
+                            isDark
+                              ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                              : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                          }`}
+                          title="Clear destination"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap xl:justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={openStopModal}
+                  className="h-10 px-3 bg-yellow-500 hover:bg-yellow-600 rounded-xl flex items-center justify-center shadow text-black text-sm font-semibold gap-2"
+                  title="Add Stop"
+                >
+                  <svg
+                    className="w-4 h-4 text-black"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
                   >
-                    <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                      A
-                    </span>
-                    <span className="truncate">
-                      {originInputRef.current?.value || "Origin"}
-                    </span>
-                  </button>
-                ) : (
-                  <input
-                    ref={originInputRef}
-                    type="text"
-                    placeholder="Start location (Tap to search/set on map)"
-                    onFocus={() => openSearchOverlay("origin")}
-                    className={`w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      isDark
-                        ? "bg-gray-800 border border-gray-700 text-white placeholder-gray-400"
-                        : "bg-white border border-gray-300 text-gray-900 placeholder-gray-500"
-                    }`}
-                  />
-                )}
-              </div>
-              <div className="flex-1">
-                {destination ? (
-                  <button
-                    onClick={() => openSearchOverlay("destination")}
-                    className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm"
-                    title="Edit destination"
-                  >
-                    <span className="w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                      B
-                    </span>
-                    <span className="truncate">
-                      {destinationInputRef.current?.value || "Destination"}
-                    </span>
-                  </button>
-                ) : (
-                  <input
-                    ref={destinationInputRef}
-                    type="text"
-                    placeholder="End location (Tap to search/set on map)"
-                    onFocus={() => openSearchOverlay("destination")}
-                    className={`w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      isDark
-                        ? "bg-gray-800 border border-gray-700 text-white placeholder-gray-400"
-                        : "bg-white border border-gray-300 text-gray-900 placeholder-gray-500"
-                    }`}
-                  />
-                )}
-              </div>
-              <div className="flex gap-2 justify-end">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  <span>Add Stop</span>
+                </button>
                 <button
                   type="button"
                   onClick={openVehicleSelector}
@@ -788,12 +923,10 @@ function RouteOptimizerComponent() {
                       : "Select Vehicle"}
                   </span>
                 </button>
-
-                 {/* fix it */}
                 <button
                   onClick={optimizeRoute}
                   disabled={!origin || !destination || isLoading}
-                  className="px-5 py-2 bg-blue-700 hover:bg-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-colors min-w-[100px] flex items-center justify-center text-sm"
+                  className={`px-5 py-2 bg-blue-700 hover:bg-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-semibold transition-colors min-w-[100px] flex items-center justify-center text-sm`}
                 >
                   {isLoading ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -801,12 +934,10 @@ function RouteOptimizerComponent() {
                     "Optimize Route"
                   )}
                 </button>
-
                 {(waypoints.length > 0 || origin || destination) && (
                   <button
-                    onClick={clearMap}
-                    disabled={isLoading}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-lg font-medium transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={clearAll}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-lg font-medium transition-colors text-sm"
                   >
                     Clear
                   </button>
@@ -817,7 +948,7 @@ function RouteOptimizerComponent() {
                   title={
                     isDark ? "Switch to light mode" : "Switch to dark mode"
                   }
-                  className="ml-2 w-10 h-10 bg-transparent rounded-full flex items-center justify-center text-sm border border-transparent hover:border-gray-300"
+                  className="w-10 h-10 bg-transparent rounded-full flex items-center justify-center text-sm border border-transparent hover:border-gray-300"
                 >
                   {isDark ? (
                     <svg
@@ -843,10 +974,157 @@ function RouteOptimizerComponent() {
                   )}
                 </button>
               </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {showStopModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4">
+          <div
+            className={`w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl border p-4 sm:p-6 mx-auto max-h-[90vh] flex flex-col ${
+              isDark
+                ? "bg-gray-900 text-white border-gray-700"
+                : "bg-white text-gray-900 border-gray-200"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold">Manage Stops</h2>
+              <button
+                type="button"
+                onClick={closeStopModal}
+                className={`text-xs px-2 py-1 rounded-md ${
+                  isDark
+                    ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                    : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                }`}
+              >
+                Close
+              </button>
+            </div>
+
+            <div
+              className={`rounded-xl border p-3 mb-3 ${
+                isDark ? "border-gray-700 bg-gray-900/70" : "border-gray-200 bg-gray-50"
+              }`}
+            >
+              <label
+                className={`block text-xs font-semibold uppercase tracking-wide mb-1 ${
+                  isDark ? "text-gray-300" : "text-gray-600"
+                }`}
+              >
+                Add New Stop
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  ref={stopAutocompleteRef}
+                  type="text"
+                  value={stopAddress}
+                  onChange={(e) => setStopAddress(e.target.value)}
+                  placeholder="Search stop address..."
+                  className={`flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 ${
+                    isDark
+                      ? "bg-gray-800 border border-gray-700 text-white placeholder-gray-400"
+                      : "bg-white border border-gray-300 text-gray-900 placeholder-gray-500"
+                  }`}
+                />
+                <button
+                  onClick={handleAddStop}
+                  className="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-black font-semibold text-sm"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+
+            <div className="mb-3 flex-1 min-h-0 flex flex-col">
+              <h3
+                className={`text-xs font-semibold uppercase tracking-wide mb-2 ${
+                  isDark ? "text-gray-300" : "text-gray-600"
+                }`}
+              >
+                Current Stops ({waypoints.length})
+              </h3>
+              <ul className="space-y-2 overflow-auto pr-1">
+                {waypoints.map((wp, idx) => (
+                  <li
+                    key={wp.id}
+                    draggable
+                    onDragStart={(e) => {
+                      dragIndexRef.current = idx;
+                      e.dataTransfer?.setData("text/plain", String(idx));
+                    }}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const from =
+                        dragIndexRef.current ??
+                        Number(e.dataTransfer.getData("text/plain"));
+                      const to = idx;
+                      if (from !== null && from !== to)
+                        reorderWaypoints(from, to);
+                      dragIndexRef.current = null;
+                    }}
+                    className={`flex items-center justify-between px-3 py-2 rounded-lg border ${
+                      isDark
+                        ? "bg-gray-800 border-gray-700"
+                        : "bg-white border-gray-200"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="cursor-move text-gray-400">≡</span>
+                      <span className="truncate text-sm">
+                        {idx + 1}. {wp.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => removeWaypoint(wp.id)}
+                        className="text-red-500 hover:text-red-700 text-xs px-2 py-1 rounded-md"
+                        title="Remove stop"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </li>
+                ))}
+                {waypoints.length === 0 && (
+                  <li
+                    className={`text-sm px-3 py-4 rounded-lg border text-center ${
+                      isDark
+                        ? "bg-gray-800 border-gray-700 text-gray-400"
+                        : "bg-gray-50 border-gray-200 text-gray-500"
+                    }`}
+                  >
+                    No stops added yet.
+                  </li>
+                )}
+              </ul>
+            </div>
+
+            <div className="flex gap-2 justify-end pt-2 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={closeStopModal}
+                className={`px-3 py-2 rounded-lg font-medium ${
+                  isDark
+                    ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddStop}
+                className="px-3 py-2 bg-yellow-500 hover:bg-yellow-600 rounded-lg text-black font-medium"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showVehicleModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
@@ -995,40 +1273,6 @@ function RouteOptimizerComponent() {
                 )}
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {searchOverlay.open && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-start pt-12">
-          <div className="w-full max-w-2xl mx-auto px-4">
-            <div className="bg-white rounded-lg shadow p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <input
-                  ref={overlayInputRef}
-                  type="search"
-                  placeholder={
-                    searchOverlay.mode === "origin"
-                      ? "Search origin..."
-                      : "Search destination..."
-                  }
-                  className={`w-full px-3 py-3 rounded-lg focus:outline-none ${
-                    isDark
-                      ? "bg-gray-900 border border-gray-700 text-white placeholder-gray-400"
-                      : "bg-white border border-gray-300 text-gray-900 placeholder-gray-500"
-                  }`}
-                />
-                <button
-                  onClick={closeSearchOverlay}
-                  className="px-3 py-2 text-sm text-gray-700"
-                >
-                  Cancel
-                </button>
-              </div>
-              <p className="text-xs text-gray-500">
-                Tap a suggestion to set the {searchOverlay.mode}
-              </p>
-            </div>
           </div>
         </div>
       )}
