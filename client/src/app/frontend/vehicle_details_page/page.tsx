@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useLayoutEffect } from "react";
-import { Truck, Plus, ChevronDown, ChevronUp } from "lucide-react";
+import { Truck, Plus, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -9,17 +10,18 @@ interface Vehicle {
   id?: string;
   name: string;
   vehicleType: string;
-  engineCapacity: string;
-  fuelCapacity: string;
-  weight: string;
-  height: string;
-  milage: string;
-  noTyres: string;
-  additionalPayloadWeight?: string;
-  additionalPayloadHeight?: string;
+  engineCapacity: number;
+  fuelCapacity: number;
+  weight: number;
+  height: number;
+  milage: number;
+  noTyres: number;
+  additionalPayloadWeight?: number;
+  additionalPayloadHeight?: number;
 }
 
 const Vehicle_details = () => {
+  const router = useRouter();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
   const [vehicleType, setVehicleType] = useState<string>("");
@@ -125,18 +127,17 @@ const Vehicle_details = () => {
       genHeight = "4.1";
       computedTyres = "6";
     }
-
     const vehicleData: Vehicle = {
       name,
       vehicleType,
-      engineCapacity: capacity,
-      fuelCapacity,
-      weight: weight.trim() || genWeight,
-      height: genHeight,
-      milage,
-      noTyres: computedTyres,
-      additionalPayloadWeight: payload_weight,
-      additionalPayloadHeight: payload_height,
+      engineCapacity: parseInt(capacity) || 0,
+      fuelCapacity: parseInt(fuelCapacity) || 0,
+      weight: parseInt(weight.trim() || genWeight) || 0,
+      height: parseFloat(genHeight) || 0.0,
+      milage: parseInt(milage) || 0,
+      noTyres: parseInt(computedTyres) || 0,
+      additionalPayloadWeight: parseInt(payload_weight) || 0,
+      additionalPayloadHeight: parseFloat(payload_height) || 0.0,
     };
 
     try {
@@ -164,18 +165,17 @@ const Vehicle_details = () => {
       setError("Vehicle name is required");
       return;
     }
-
     const vehicleData: Vehicle = {
       name,
       vehicleType,
-      engineCapacity: capacity,
-      fuelCapacity,
-      weight,
-      height,
-      milage,
-      noTyres,
-      additionalPayloadWeight: payload_weight,
-      additionalPayloadHeight: payload_height,
+      engineCapacity: parseInt(capacity) || 0,
+      fuelCapacity: parseInt(fuelCapacity) || 0,
+      weight: parseInt(weight) || 0,
+      height: parseFloat(height) || 0.0,
+      milage: parseInt(milage) || 0,
+      noTyres: parseInt(noTyres) || 0,
+      additionalPayloadWeight: parseInt(payload_weight) || 0,
+      additionalPayloadHeight: parseFloat(payload_height) || 0.0,
     };
 
     try {
@@ -260,10 +260,22 @@ const Vehicle_details = () => {
           }`}
         >
           <div className="flex items-start justify-between gap-3 sm:gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-yellow-500">
-                Fleet Management
-              </p>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.back()}
+                className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
+                  isDark
+                    ? "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
+                }`}
+                aria-label="Go back"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-yellow-500">
+                  Fleet Management
+                </p>
               <h1
                 className={`mt-2 text-2xl font-semibold sm:text-4xl ${
                   isDark ? "text-white" : "text-zinc-900"
@@ -510,17 +522,17 @@ const Vehicle_details = () => {
                     );
                     if (v) {
                       setName(v.name);
-                      setHeight(v.height.replace(/[^0-9.]/g, ""));
-                      setWeight(v.weight.replace(/[^0-9.]/g, ""));
-                      setCapacity(v.engineCapacity.replace(/[^0-9.]/g, ""));
-                      setFuelCapacity((v.fuelCapacity || "").replace(/[^0-9.]/g, "") || "60");
-                      setMilage((v.milage || "").replace(/[^0-9.]/g, ""));
-                      setNoTyres((v.noTyres || "").replace(/[^0-9]/g, ""));
+                      setHeight(String(v.height).replace(/[^0-9.]/g, ""));
+                      setWeight(String(v.weight).replace(/[^0-9.]/g, ""));
+                      setCapacity(String(v.engineCapacity).replace(/[^0-9.]/g, ""));
+                      setFuelCapacity((String(v.fuelCapacity) || "").replace(/[^0-9.]/g, "") || "60");
+                      setMilage((String(v.milage) || "").replace(/[^0-9.]/g, ""));
+                      setNoTyres((String(v.noTyres) || "").replace(/[^0-9]/g, ""));
                       setPayloadWeight(
-                        (v.additionalPayloadWeight || "").replace(/[^0-9.]/g, ""),
+                        (String(v.additionalPayloadWeight) || "").replace(/[^0-9.]/g, ""),
                       );
                       setPayloadHeight(
-                        (v.additionalPayloadHeight || "").replace(/[^0-9.]/g, ""),
+                        (String(v.additionalPayloadHeight) || "").replace(/[^0-9.]/g, ""),
                       );
                       setVehicleType(v.vehicleType);
                     }
@@ -748,6 +760,7 @@ const Vehicle_details = () => {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 };
