@@ -3,6 +3,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { auth } from "../firebase/config";
+import { onAuthStateChanged, User } from "firebase/auth";
+
 type Waypoint = {
   location: any;
   name: string;
@@ -10,18 +13,28 @@ type Waypoint = {
 };
 
 type Vehicle = {
-  id?: int;
+  id?: string;
   name: string;
   vehicleType: string;
-  engineCapacity: int;
-  weight: int;
-  height: int;
-  additionalPayloadWeight?: int;
-  additionalPayloadHeight?: int;
+  engineCapacity: string;
+  weight: string;
+  height: string;
+  additionalPayloadWeight?: string;
+  additionalPayloadHeight?: string;
+  userId?: string;
 };
 
 function RouteOptimizerComponent() {
   const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const mapRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<any[]>([]);
   const scriptLoadedRef = useRef(false);
@@ -107,12 +120,18 @@ function RouteOptimizerComponent() {
   };
 
   const fetchVehicles = useCallback(async () => {
+    const uid = currentUser?.uid || auth.currentUser?.uid;
+    if (!uid) {
+      setVehiclesError("User not logged in");
+      setVehicles([]);
+      return;
+    }
     try {
       setVehiclesLoading(true);
       setVehiclesError(null);
       const backendUrl =
         process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-      const resp = await fetch(`${backendUrl}/vehicles`);
+      const resp = await fetch(`${backendUrl}/vehicles?userId=${uid}`);
       if (!resp.ok) {
         const msg = await resp.text();
         throw new Error(msg || "Failed to fetch vehicles");
@@ -128,7 +147,7 @@ function RouteOptimizerComponent() {
     } finally {
       setVehiclesLoading(false);
     }
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     if (showVehicleModal) {
