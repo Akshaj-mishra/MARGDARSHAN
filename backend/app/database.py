@@ -49,14 +49,15 @@ class VehicleModel(BaseModel):
     id: Optional[str] = None
     name: str
     vehicleType: str
-    engineCapacity: str
-    fuelCapacity: str
-    weight: str
-    height: str
-    milage: str
-    noTyres: str
-    additionalPayloadWeight: Optional[str] = ""
-    additionalPayloadHeight: Optional[str] = ""
+    engineCapacity: int
+    fuelCapacity: int
+    weight: int
+    height: float
+    milage: int
+    noTyres: int
+    additionalPayloadWeight: Optional[int] = 0
+    additionalPayloadHeight: Optional[float] = 0.0
+    userId: Optional[str] = None
 
 @router.get("/health")
 async def health_check():
@@ -80,9 +81,12 @@ async def create_vehicle(vehicle: VehicleModel):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/vehicles")
-async def get_all_vehicles() -> List[VehicleModel]:
+async def get_all_vehicles(userId: Optional[str] = None) -> List[VehicleModel]:
     try:
-        docs = db.collection("vehicles").stream()
+        if userId:
+            docs = db.collection("vehicles").where("userId", "==", userId).stream()
+        else:
+            docs = db.collection("vehicles").stream()
         vehicles = []
         for doc in docs:
             if doc.id == "_metadata":
@@ -90,9 +94,9 @@ async def get_all_vehicles() -> List[VehicleModel]:
             vehicle_data = doc.to_dict()
             vehicle_data["id"] = doc.id
             if "milage" not in vehicle_data:
-                vehicle_data["milage"] = ""
+                vehicle_data["milage"] = 0
             if "noTyres" not in vehicle_data:
-                vehicle_data["noTyres"] = ""
+                vehicle_data["noTyres"] = 0
             vehicles.append(vehicle_data)
         logger.info(f"Retrieved {len(vehicles)} vehicles from database")
         return vehicles
