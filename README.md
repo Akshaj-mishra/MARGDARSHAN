@@ -117,15 +117,4 @@ To get a local copy up and running, follow these simple steps.
 
 ---
 
-## 👥 Our Team
-
-| Name              | Role                           
-| ----------------- | ------------------------------
-| **Swastik Mishra** | Backend Developer              
-| **Akshaj Mishra** | Backend Developer              
-| **Aryan Kumar** | Frontend Developer             
-| **Ritika Kushwaha** | Frontend Developer             
-| **Subash Rahul** | Research & Documentation 
-
----
 
